@@ -81,7 +81,7 @@ export default function AddNewBedMenu () {
 const styles = StyleSheet.create({
   ANBContainer : {
     flex: 1,
-    width: 400,
+    maxWidth: 400,
     alignSelf: 'flex-end',
     backgroundColor: '#DEE4DF',
     borderRadius: 20,
@@ -89,6 +89,7 @@ const styles = StyleSheet.create({
   },
   ANBTopBar: {
     flex: 0.08,
+    width: 350,
     backgroundColor: '#23C564',
     borderTopRightRadius: 20,
     borderTopLeftRadius: 20,
