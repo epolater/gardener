@@ -6,24 +6,31 @@ import { faXmarkCircle } from '@fortawesome/free-solid-svg-icons/faXmarkCircle'
 
 export default function AddNewBedMenu () {
 
+  const [closeMenu, onCloseMenu] = useState(true)
+
+  // Input fields  variables
   const [name, onChangeName] = useState('')
   const [number, onChangeNumber] = useState('')
   const [width, onChangeWidth] = useState('')
   const [length, onChangeLength] = useState('')
 
-  // Remove any non-numeric characters
-  const handleInputChange = (text) => { 
+  // Remove any non-numeric characters from input
+  const handleInputChange = (text) => {
     let numericValue = text.replace(/[^0-9.]/g, '')
     numericValue = isNaN(numericValue) ? '': numericValue.toLocaleString()
     return numericValue
   }
 
   return (
+    <>
+    { closeMenu &&
       <View style={styles.ANBContainer}>
         <View style={styles.ANBTopBar}>
           <View style={styles.ANBTopBarSubContainer}>
             <Text style={styles.ANBTopBarText}>Add New Bed</Text>
-            <FontAwesomeIcon icon={ faXmarkCircle } size={24} style={styles.ANBXmark}/>
+            <Pressable onPress={() => {onCloseMenu(false)}}>
+              <FontAwesomeIcon icon={ faXmarkCircle } size={24} style={styles.ANBXmark}/>
+            </Pressable>
           </View>
         </View>
         <View style={styles.ANBSubContainer} keyboardDismissMode='on-drag'>
@@ -74,6 +81,8 @@ export default function AddNewBedMenu () {
           </Pressable>
         </View>
       </View>
+    }
+    </>
   )
 }
 
@@ -85,7 +94,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     backgroundColor: '#DEE4DF',
     borderRadius: 20,
-    
   },
   ANBTopBar: {
     flex: 0.08,
@@ -125,8 +133,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     fontSize: 16,
-    backgroundColor: 'white'
-    
+    backgroundColor: 'white',
   },
   ANBAddButton:{
     fontSize: 20,

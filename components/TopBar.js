@@ -1,6 +1,11 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native'
 import { Button } from 'react-native-paper';
+
 import Icon from 'react-native-vector-icons/FontAwesome'
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
+import { faLeaf } from '@fortawesome/free-solid-svg-icons/faLeaf'
+
+import AddNewBedMenu from './AddNewBedMenu';
 
 export default function TopBar() {
   return (
@@ -8,14 +13,7 @@ export default function TopBar() {
       <View style={styles.logocontainer}>
         <Icon name="bars" size={30} style={styles.menuIcon}/>
         <Text style={styles.topBarName}>Gardener</Text>
-      </View>
-      <View>
-        <Pressable 
-          style={styles.addNewButton}
-          onPress={() => {}}
-        >
-          <Icon name="plus" size={28}  style={styles.addNewIcon}/>
-        </Pressable>
+        <FontAwesomeIcon icon={ faLeaf } size={24} style={styles.leafIcon}/>
       </View>
     </View>
   )
@@ -55,24 +53,9 @@ const styles = StyleSheet.create({
     marginRight: 20,
     color: "#8bc907",
   },
-
-  addNewButton: {
-    height: 40,
-    width: 40,
-    backgroundColor: '#dee4df',
-    borderRadius: 20,
-    marginRight: 10,
-    marginBottom: 4,
-
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-  },
-
-  addNewIcon: {
-    textAlign: 'center',
-    marginVertical: 8,
-    color: '#46785a'
-  },
+  leafIcon: {
+    paddingTop: 4,
+    marginLeft: 10,
+    color: "#46785a",
+  }
 });
