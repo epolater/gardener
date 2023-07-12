@@ -1,7 +1,6 @@
 import { View, Text, TextInput, StyleSheet, Pressable, Alert } from 'react-native'
 import { useEffect, useState } from 'react'
 import * as SQLite from 'expo-sqlite'
-import * as FileSystem from 'expo-file-system';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faXmarkCircle } from '@fortawesome/free-solid-svg-icons/faXmarkCircle'
@@ -27,68 +26,36 @@ export default function AddNewBedMenu () {
 
   // Open database if not exists and retrieve data from database
   const db = SQLite.openDatabase('mydatabase.db')
-
-  const dbFileName = 'mydatabase.db';
-  const cacheDirectory = `${FileSystem.cacheDirectory}SQLite`;
-
   const [beds, setBeds] = useState([])
 
+  // Creating Beds Table
   useEffect(() => {
-    console.log('use effect is workin')
     const createDatabase = () => {
         db.transaction(tx => {
-          console.log('dbtx is workin')
           tx.executeSql(
             'CREATE TABLE IF NOT EXISTS beds (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, number INTEGER, width INTEGER, length INTEGER)',
             [],
-            (_, result) => {
-              if (result.rowsAffected > 0) {
-                console.log('Table "beds" created or already exists');
-              } else {
-                console.log('Failed to create table "beds"');
-              }
-            },
-            (_, error) => {
-              console.log('Error creating table "beds":', error);
-            }
-          );
-        });
-      };
+            (_, result) => {console.log(result)},
+            (_, error) => {console.log('Error creating table "beds":', error)}
+          )
+        })
+      }
 
       // Retrieve data from the database
       db.transaction(tx => {
-        tx.executeSql(
-          'SELECT * FROM beds',
-          [],
-          (_, result) => {setBeds(result.rows._array)},
+        tx.executeSql('SELECT * FROM beds',[],
+          (_, result) => {setBeds(result.rows._array)
+            console.log(result.rows._array)},
           (_, error) => {
             console.log('Error retrieving data from "beds" table:', error);
           }
-        );
-      });
+        ); 
+      })
 
     createDatabase();
 
   }, [])
 
-
-  // Retrieve data from the database
-  // const [beds, setBeds] = useState([])
-
-  // useEffect(() => {
-  //   console.log('select *', db)
-
-  //   db.transaction(tx => {
-  //     tx.executeSql(
-  //       'SELECT * FROM beds',
-  //       [],
-  //       (_, result) => {setBeds(result.rows._array)},
-  //       (_, error) => {
-  //         console.log('Error retrieving data from "beds" table:', error);
-  //       }
-  //     );
-  //   });
-  // }, [db]);
 
   // Save Input to database
   const addNewBed = () => {
@@ -97,7 +64,6 @@ export default function AddNewBedMenu () {
         'INSERT INTO beds (name, number, width, length) values (?,?,?,?)',
         [name, parseInt(number), parseInt(width), parseInt(length)],
         (txobj, result) => {
-          console.log("insert error")
           if (result.rowsAffected > 0) {
             Alert.alert('Success', 'New bed added', [{ text: 'OK' }])
           } else {Alert.alert('Error', 'Failed to add new bed')}
@@ -109,14 +75,6 @@ export default function AddNewBedMenu () {
     })
 
     console.log("add new button is pressed")
-  }
-
-  const showDatabase = () => {
-      return (
-        <View>
-          <Text>Name: {beds.length}</Text>
-        </View>
-      )
   }
 
   return (
@@ -174,7 +132,6 @@ export default function AddNewBedMenu () {
           <Pressable style={styles.ANBAddButton} onPress={() => addNewBed()}>
             <Text style={styles.ANBAddButtonText}>Add</Text>
           </Pressable>
-          {showDatabase()}
         </View>
       </View>
     }
