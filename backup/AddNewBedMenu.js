@@ -1,7 +1,7 @@
 import { View, Text, TextInput, StyleSheet, Pressable, Alert } from 'react-native'
 import { useEffect, useState } from 'react'
 import * as SQLite from 'expo-sqlite'
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system'
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faXmarkCircle } from '@fortawesome/free-solid-svg-icons/faXmarkCircle'
@@ -9,6 +9,53 @@ import { faXmarkCircle } from '@fortawesome/free-solid-svg-icons/faXmarkCircle'
 
 
 export default function AddNewBedMenu () {
+
+  // Open database
+  //const db = SQLite.openDatabase('mydatabase.db')
+
+  const dbFileName = 'mydatabase.db';
+  const cacheDirectory = `${FileSystem.cacheDirectory}SQLite`;
+  const db = SQLite.openDatabase(`${cacheDirectory}/${dbFileName}`);
+
+  useEffect(() => {
+    const createDatabase = async () => {
+      try {
+        const { exists, isDirectory } = await FileSystem.getInfoAsync(cacheDirectory);
+
+        if (!exists) {
+          await FileSystem.makeDirectoryAsync(cacheDirectory, { intermediates: true });
+        } else if (!isDirectory) {
+          // Handle the case where a file exists with the same name as the directory
+          await FileSystem.deleteAsync(cacheDirectory);
+          await FileSystem.makeDirectoryAsync(cacheDirectory, { intermediates: true });
+        }
+
+        db.transaction(tx => {
+          tx.executeSql(
+            'CREATE TABLE IF NOT EXISTS beds (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, number INTEGER, width INTEGER, length INTEGER)',
+            [],
+            (_, result) => {
+              if (result.rowsAffected > 0) {
+                console.log('Table "beds" created or already exists');
+              } else {
+                console.log('Failed to create table "beds"');
+              }
+            },
+            (_, error) => {
+              console.log('Error creating table "beds":', error);
+            }
+          );
+        });
+      } catch (error) {
+        console.log('Error creating database:', error);
+      }
+    };
+
+    createDatabase();
+
+  }, []);
+
+
 
   const [closeMenu, onCloseMenu] = useState(true)
 
@@ -25,91 +72,43 @@ export default function AddNewBedMenu () {
     return numericValue
   }
 
-  // Open database if not exists and retrieve data from database
-  const db = SQLite.openDatabase('mydatabase.db')
-
-  const dbFileName = 'mydatabase.db';
-  const cacheDirectory = `${FileSystem.cacheDirectory}SQLite`;
-
   const [beds, setBeds] = useState([])
 
-  useEffect(() => {
-    console.log('use effect is workin')
-    const createDatabase = () => {
-        db.transaction(tx => {
-          console.log('dbtx is workin')
-          tx.executeSql(
-            'CREATE TABLE IF NOT EXISTS beds (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, number INTEGER, width INTEGER, length INTEGER)',
-            [],
-            (_, result) => {
-              if (result.rowsAffected > 0) {
-                console.log('Table "beds" created or already exists');
-              } else {
-                console.log('Failed to create table "beds"');
-              }
-            },
-            (_, error) => {
-              console.log('Error creating table "beds":', error);
-            }
-          );
-        });
-      };
-
-      // Retrieve data from the database
-      db.transaction(tx => {
-        tx.executeSql(
-          'SELECT * FROM beds',
-          [],
-          (_, result) => {setBeds(result.rows._array)},
-          (_, error) => {
-            console.log('Error retrieving data from "beds" table:', error);
-          }
-        );
-      });
-
-    createDatabase();
-
-  }, [])
-
-
   // Retrieve data from the database
-  // const [beds, setBeds] = useState([])
-
-  // useEffect(() => {
-  //   console.log('select *', db)
-
-  //   db.transaction(tx => {
-  //     tx.executeSql(
-  //       'SELECT * FROM beds',
-  //       [],
-  //       (_, result) => {setBeds(result.rows._array)},
-  //       (_, error) => {
-  //         console.log('Error retrieving data from "beds" table:', error);
-  //       }
-  //     );
-  //   });
-  // }, [db]);
+  useEffect(() => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'SELECT * FROM beds',
+        [],
+        (_, result) => {
+          const rows = result.rows._array;
+          setBeds(rows);
+        },
+        (_, error) => {
+          console.log('Error retrieving data from "beds" table:', error);
+        }
+      );
+    });
+  }, [db]);
 
   // Save Input to database
   const addNewBed = () => {
     db.transaction(tx => {
       tx.executeSql(
-        'INSERT INTO beds (name, number, width, length) values (?,?,?,?)',
+        'INSERT INTO beds (name, number, width, lenght) values (?,?,?,?)',
         [name, parseInt(number), parseInt(width), parseInt(length)],
         (txobj, result) => {
-          console.log("insert error")
           if (result.rowsAffected > 0) {
             Alert.alert('Success', 'New bed added', [{ text: 'OK' }])
           } else {Alert.alert('Error', 'Failed to add new bed')}
-        },
-        (_, error) => {
-          console.log('Error retrieving data from "beds" table:', error);
         }
         )
     })
 
     console.log("add new button is pressed")
   }
+
+
 
   const showDatabase = () => {
       return (

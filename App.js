@@ -1,7 +1,9 @@
 import { StatusBar } from 'expo-status-bar'
 import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Icon from 'react-native-vector-icons/FontAwesome'
+import * as SQLite from 'expo-sqlite'
+
 
 import TopBar from './components/TopBar'
 import BottomBar from './components/BottomBar'
@@ -9,6 +11,7 @@ import AddNewBedMenu from './components/AddNewBedMenu'
 import BedSumCard from './components/BedSumCard'
 
 export default function App() {
+
 
   const [anbMenu, onShowAnbMenu] = useState(false)
 
@@ -32,10 +35,8 @@ export default function App() {
       </View>
       <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
         <BedSumCard />
-        <BedSumCard />
-        <BedSumCard />
       </ScrollView>
-      
+
     </ScrollView>
 
     <View style={styles.bottomContainer}>
@@ -72,7 +73,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     position: 'absolute',
     right: 20,
-    top: 35,
+    top: 40,
     zIndex: 99,
 
     shadowColor: '#000000',
