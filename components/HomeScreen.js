@@ -1,13 +1,13 @@
-import { View, Text, TextInput, StyleSheet, Pressable, Alert } from 'react-native'
+import { View, ScrollView, Text, TextInput, StyleSheet, Pressable, Alert } from 'react-native'
 import { useEffect, useState } from 'react'
 import * as SQLite from 'expo-sqlite'
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faXmarkCircle } from '@fortawesome/free-solid-svg-icons/faXmarkCircle'
 
+import BedSumCard from './BedSumCard'
 
-
-export default function AddNewBedMenu () {
+export default function HomeScreen ({showANBmenu}) {
 
   const [closeMenu, onCloseMenu] = useState(true)
 
@@ -35,22 +35,10 @@ export default function AddNewBedMenu () {
           tx.executeSql(
             'CREATE TABLE IF NOT EXISTS beds (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, number INTEGER, width INTEGER, length INTEGER)',
             [],
-            (_, result) => {console.log(result)},
             (_, error) => {console.log('Error creating table "beds":', error)}
           )
         })
       }
-
-      // Retrieve data from the database
-      db.transaction(tx => {
-        tx.executeSql('SELECT * FROM beds',[],
-          (_, result) => {setBeds(result.rows._array)
-            console.log(result.rows._array)},
-          (_, error) => {
-            console.log('Error retrieving data from "beds" table:', error);
-          }
-        ); 
-      })
 
     createDatabase();
 
@@ -69,17 +57,82 @@ export default function AddNewBedMenu () {
           } else {Alert.alert('Error', 'Failed to add new bed')}
         },
         (_, error) => {
-          console.log('Error retrieving data from "beds" table:', error);
+          console.log('Error retrieving data from table:', error);
         }
         )
+    })
+
+    // Set Beds List
+    db.transaction(tx => {
+      tx.executeSql('SELECT * FROM beds',null,
+        (_, result) => setBeds(result.rows._array),
+        (_, error) => console.log(error)
+      )
     })
 
     console.log("add new button is pressed")
   }
 
+  // Retrieve data from the database
+  useEffect(() => {
+    db.transaction(tx => {
+      tx.executeSql('SELECT * FROM beds',null,
+        (_, result) => setBeds(result.rows._array),
+        (_, error) => console.log(error)
+      )
+
+    })
+  }, [])
+
+  // Delete Bed
+  const deleteBed = (id) => {
+    db.transaction(tx => {
+      tx.executeSql('DELETE from beds WHERE id=?',[id],
+      (txObj, result) => {
+        if (result.rowsAffected > 0) {
+          let newBeds = [...beds].filter(bed => bed.id !== id)
+          setBeds(newBeds)
+        }
+      },
+      (txObj, error) => console.log(error)
+      )
+    })
+  }
+
+  // Bed Cards Slider
+  const MyBeds = () => {
+    const showBeds = () => {
+      return beds.reverse().map((bed, index) => {
+        return (
+          <View key={index}>
+            <BedSumCard
+              id={bed.id}
+              name={bed.name}
+              number={bed.number}
+              width={bed.width}
+              length={bed.length}
+              onDelete={deleteBed}
+            />
+          </View>
+        )
+      })
+    }
+
+    return (
+      <>
+        <View style={styles.MBHeaderContainer}>
+            <Text style={styles.MBHeaderText}>My Beds</Text>
+        </View>
+        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+          {showBeds()}
+        </ScrollView>
+      </>
+    )
+  }
+
   return (
     <>
-    { closeMenu &&
+    {showANBmenu &&
       <View style={styles.ANBContainer}>
         <View style={styles.ANBTopBar}>
           <View style={styles.ANBTopBarSubContainer}>
@@ -135,6 +188,7 @@ export default function AddNewBedMenu () {
         </View>
       </View>
     }
+    <MyBeds />
     </>
   )
 }
@@ -147,6 +201,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     backgroundColor: '#DEE4DF',
     borderRadius: 20,
+    marginBottom: 20,
   },
   ANBTopBar: {
     flex: 0.08,
@@ -156,21 +211,20 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
   },
   ANBTopBarSubContainer: {
-    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 15,
+    paddingVertical: 10,
     paddingHorizontal: 20,
   },
   ANBXmark: {
     color: 'white',
-    paddingTop: 0,
+    paddingVertical: 3,
   },
   ANBTopBarText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
-    verticalAlign: 'bottom'
+    paddingVertical: 3,
   },
 
   ANBSubContainer: {
@@ -201,5 +255,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: 'white',
+  },
+
+  MBHeaderContainer : {
+    flex: 0.1,
+    paddingVertical: 5,
+    paddingLeft: 10,
+    borderBottomWidth: 1,
+    marginBottom: 20,
+    borderBottomColor: 'lightgrey',
+  },
+  MBHeaderText : {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#46785a'
   },
 })

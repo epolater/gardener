@@ -1,10 +1,12 @@
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, Pressable } from 'react-native'
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
+import { faTrash } from '@fortawesome/free-solid-svg-icons/faTrash'
 
-export default function BedSumCard () {
+export default function BedSumCard ({id, name, number, width, length, onDelete}) {
   return (
     <View style={styles.BCSContainer}>
       <View style={styles.BCSSubContainer}>
-        <Text style={styles.BCSTopBarText}>Bed Name</Text>
+        <Text style={styles.BCSTopBarText}>Bed Name: {name}</Text>
       </View>
       <View style={styles.layoutContainer}>
         <Text>Bed Layout</Text>
@@ -17,11 +19,16 @@ export default function BedSumCard () {
           <Text style={styles.infoTextLeft}>Next Process :</Text>
         </View>
         <View>
-          <Text style={styles.infoText}>50 sqm</Text>
-          <Text style={styles.infoText}>3</Text>
+          <Text style={styles.infoText}>{width * length * number} sqm</Text>
+          <Text style={styles.infoText}>1</Text>
           <Text style={styles.infoText}>Cleaning</Text>
           <Text style={styles.infoText}>Watering</Text>
         </View>
+      </View>
+      <View style={styles.BCSIconContainer}>
+        <Pressable onPress={() => {onDelete(id); console.log('Delete icon pressed')}}>
+          <FontAwesomeIcon icon={faTrash} size={16} style={styles.thrashIcon}/>
+        </Pressable>
       </View>
     </View>
   )
@@ -35,7 +42,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f6f6f6',
     borderRadius: 20,
     borderWidth: 1,
-    marginLeft: 20,
+    marginRight: 20,
     borderColor: 'lightgray',
   },
 
@@ -55,7 +62,7 @@ const styles = StyleSheet.create({
   },
 
   layoutContainer: {
-    flex:0.7,
+    flex:0.9,
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center'
@@ -77,5 +84,14 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginBottom: 5,
     color: 'gray',
+  },
+
+  BCSIconContainer: {
+    alignItems: 'flex-end',
+    padding: 15,
+  },
+  thrashIcon: {
+    color: 'lightgray',
+
   },
 })

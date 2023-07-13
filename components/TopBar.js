@@ -5,7 +5,7 @@ import Icon from 'react-native-vector-icons/FontAwesome'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faLeaf } from '@fortawesome/free-solid-svg-icons/faLeaf'
 
-import AddNewBedMenu from './AddNewBedMenu';
+import AddNewBedMenu from './HomeScreen';
 
 export default function TopBar() {
   return (

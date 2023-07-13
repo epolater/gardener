@@ -2,41 +2,27 @@ import { StatusBar } from 'expo-status-bar'
 import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import Icon from 'react-native-vector-icons/FontAwesome'
-import * as SQLite from 'expo-sqlite'
-
 
 import TopBar from './components/TopBar'
 import BottomBar from './components/BottomBar'
-import AddNewBedMenu from './components/AddNewBedMenu'
-import BedSumCard from './components/BedSumCard'
+import HomeScreen from './components/HomeScreen'
 
 export default function App() {
 
-
-  const [anbMenu, onShowAnbMenu] = useState(false)
+  const [ANBMenu, onShowANBMenu] = useState(false)
 
   return (
     <>
     <View style={styles.topContainer}>
       <StatusBar style="auto" />
       <TopBar />
-      <Pressable
-          style={styles.addNewButton}
-          onPress={() => {onShowAnbMenu(!anbMenu)}}
-        >
+      <Pressable style={styles.addNewButton} onPress={() => {onShowANBMenu(!ANBMenu)}}>
           <Icon name="plus" size={28}  style={styles.addNewIcon}/>
-        </Pressable>
+      </Pressable>
     </View>
 
     <ScrollView style={styles.middleContainer}>
-      {anbMenu && <AddNewBedMenu />}
-      <View style={styles.homeHeaderContainer}>
-        <Text style={styles.homeHeaderText}>My Beds</Text>
-      </View>
-      <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-        <BedSumCard />
-      </ScrollView>
-
+      <HomeScreen showANBmenu={ANBMenu}/>
     </ScrollView>
 
     <View style={styles.bottomContainer}>
@@ -47,7 +33,7 @@ export default function App() {
 }
 
 
-// Styles
+// Styles ------------------------------------------------
 const styles = StyleSheet.create({
   topContainer: {
     flex: 0.15,
@@ -87,18 +73,5 @@ const styles = StyleSheet.create({
     color: '#46785a'
   },
 
-  homeHeaderContainer : {
-    flex: 0.1,
-    paddingVertical: 5,
-    paddingLeft: 10,
-    borderBottomWidth: 1,
-    marginBottom: 20,
-    borderBottomColor: 'lightgrey',
-  },
-  homeHeaderText : {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#46785a'
-  },
 
 });
