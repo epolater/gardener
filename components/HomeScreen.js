@@ -1,4 +1,4 @@
-import { View, ScrollView, Text, TextInput, StyleSheet, Pressable, Alert } from 'react-native'
+import { View, ScrollView, Text, TextInput, StyleSheet, Pressable, Alert, Animated } from 'react-native'
 import { useEffect, useState } from 'react'
 import * as SQLite from 'expo-sqlite'
 
@@ -65,7 +65,7 @@ export default function HomeScreen ({showANBmenu}) {
     // Set Beds List
     db.transaction(tx => {
       tx.executeSql('SELECT * FROM beds',null,
-        (_, result) => setBeds(result.rows._array),
+        (_, result) => setBeds(result.rows._array.reverse()),
         (_, error) => console.log(error)
       )
     })
@@ -77,7 +77,7 @@ export default function HomeScreen ({showANBmenu}) {
   useEffect(() => {
     db.transaction(tx => {
       tx.executeSql('SELECT * FROM beds',null,
-        (_, result) => setBeds(result.rows._array),
+        (_, result) => setBeds(result.rows._array.reverse()),
         (_, error) => console.log(error)
       )
 
@@ -102,9 +102,10 @@ export default function HomeScreen ({showANBmenu}) {
   // Bed Cards Slider
   const MyBeds = () => {
     const showBeds = () => {
-      return beds.reverse().map((bed, index) => {
+      return beds.map((bed, index) => {
+        const isNew = index === beds.length - 1 // Check if it's a new card
         return (
-          <View key={index}>
+          <Animated.View key={index}  >
             <BedSumCard
               id={bed.id}
               name={bed.name}
@@ -112,21 +113,23 @@ export default function HomeScreen ({showANBmenu}) {
               width={bed.width}
               length={bed.length}
               onDelete={deleteBed}
+              isNew={isNew}
             />
-          </View>
+          </Animated.View>
         )
       })
     }
 
     return (
-      <>
+      <View>
         <View style={styles.MBHeaderContainer}>
             <Text style={styles.MBHeaderText}>My Beds</Text>
         </View>
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
           {showBeds()}
         </ScrollView>
-      </>
+        <Text>Text Under Bed Cards</Text>
+      </View>
     )
   }
 
