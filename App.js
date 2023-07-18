@@ -1,42 +1,48 @@
 import { StatusBar } from 'expo-status-bar'
-import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native'
-import React, { useState, useEffect } from 'react'
-import Icon from 'react-native-vector-icons/FontAwesome'
+import { StyleSheet, View } from 'react-native'
+import React, { useState } from 'react'
+import {NavigationContainer, DefaultTheme} from '@react-navigation/native'
 
+import {DataProvider} from './components/DataContext'
 import TopBar from './components/TopBar'
 import BottomBar from './components/BottomBar'
-import HomeScreen from './components/HomeScreen'
+
 
 export default function App() {
 
   const [ANBMenu, onShowANBMenu] = useState(false)
 
+  // Make Navigation Container backgroundcolor transparent
+  const navTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: 'transparent',
+    },
+  }
+
   return (
-    <>
-    <View style={styles.topContainer}>
-      <StatusBar style="auto" />
-      <TopBar />
-      <Pressable style={styles.addNewButton} onPress={() => {onShowANBMenu(!ANBMenu)}}>
-          <Icon name="plus" size={28}  style={styles.addNewIcon}/>
-      </Pressable>
-    </View>
+    <DataProvider>
+      <NavigationContainer theme={navTheme} >
+        <View style={styles.topContainer}>
+          <StatusBar style="auto" />
+          <TopBar />
+        </View>
 
-    <ScrollView style={styles.middleContainer}>
-      <HomeScreen showANBmenu={ANBMenu}/>
-    </ScrollView>
-
-    <View style={styles.bottomContainer}>
-      <BottomBar />
-    </View>
-    </>
+        <View style={styles.bottomContainer}>
+          <BottomBar />
+        </View>
+      </NavigationContainer>
+    </DataProvider>
   );
+
 }
 
 
 // Styles ------------------------------------------------
 const styles = StyleSheet.create({
   topContainer: {
-    flex: 0.15,
+    flex: 0.13,
     zIndex: 9,
   },
 
@@ -45,9 +51,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 20,
   },
+
   bottomContainer: {
-    flex: 0.15,
-    zIndex: 9,
+    flex: 1,
   },
 
   addNewButton: {

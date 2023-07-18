@@ -3,27 +3,9 @@ import React, { useRef, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faTrash } from '@fortawesome/free-solid-svg-icons/faTrash'
 
-export default function BedSumCard ({id, name, number, width, length, onDelete, isNew}) {
+export default function BedSumCard ({id, name, number, width, length, onDelete}) {
 
   const cardWidth = useRef(new Animated.Value(350)).current
-
-  useEffect(() => {
-    if (isNew) {
-      Animated.sequence([
-        Animated.timing(cardWidth, {
-          toValue: 300,
-          duration: 200,
-          useNativeDriver: false,
-        }),
-        Animated.spring(cardWidth, {
-          toValue: 350,
-          friction: 4,
-          useNativeDriver: false,
-        }),
-      ]).start()
-    }
-  }, [isNew])
-
 
   const deleteCard = () => {
     Animated.timing(cardWidth, {
@@ -33,13 +15,13 @@ export default function BedSumCard ({id, name, number, width, length, onDelete, 
     }).start(() => {onDelete(id)})
   }
 
-  //useEffect(() => {cardWidth.setValue(350)})
+  useEffect(() => {cardWidth.setValue(350)})
 
   return (
     <Animated.View style={{ width: cardWidth, marginRight: 20 }}>
       <View style={styles.BCSContainer}>
         <View style={styles.BCSSubContainer}>
-          <Text style={styles.BCSTopBarText}>Bed Name: {name}</Text>
+          <Text style={styles.BCSTopBarText}>{name}</Text>
         </View>
         <View style={styles.layoutContainer}>
           <Text>Bed Layout</Text>
@@ -71,7 +53,7 @@ export default function BedSumCard ({id, name, number, width, length, onDelete, 
 // Styles
 const styles = StyleSheet.create({
   BCSContainer : {
-    flexGrow: 1,
+    flex: 1,
     height: 400,
     width: 350,
     backgroundColor: '#f6f6f6',
