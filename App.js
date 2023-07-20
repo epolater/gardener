@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar'
 import { StyleSheet, View } from 'react-native'
 import React, { useState } from 'react'
 import {NavigationContainer, DefaultTheme} from '@react-navigation/native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 
 import {DataProvider} from './components/DataContext'
 import TopBar from './components/TopBar'
@@ -23,6 +24,7 @@ export default function App() {
 
   return (
     <DataProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer theme={navTheme} >
         <View style={styles.topContainer}>
           <StatusBar style="auto" />
@@ -33,6 +35,7 @@ export default function App() {
           <BottomBar />
         </View>
       </NavigationContainer>
+      </GestureHandlerRootView>
     </DataProvider>
   );
 

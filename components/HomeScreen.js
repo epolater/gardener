@@ -1,7 +1,5 @@
 import { View, ScrollView, Text, StyleSheet, Pressable } from 'react-native'
-import { useEffect, useState, useContext } from 'react'
-import * as SQLite from 'expo-sqlite'
-
+import { useState, useContext } from 'react'
 import Icon from 'react-native-vector-icons/FontAwesome'
 
 import DataContext from './DataContext'
@@ -11,17 +9,6 @@ import AddNewBedMenu from './AddNewBedMenu'
 export default function HomeScreen () {
 
   const [ANBMenu, onShowANBMenu] = useState(false)
-
-   // Delete unwanted data from the database
-  //  useEffect(() => {
-  //   db.transaction(tx => {
-  //     tx.executeSql('DELETE FROM beds WHERE name=""',null,
-  //       (_, result) => setBeds(result.rows._array.reverse()),
-  //       (_, error) => console.log(error)
-  //     )
-
-  //   })
-  // }, [])
 
   // Delete Bed
   const deleteBed = (id) => {
@@ -67,22 +54,19 @@ export default function HomeScreen () {
     )
   }
 
-
   return (
     <>
       <Pressable style={styles.addNewButton} onPress={() => {onShowANBMenu(!ANBMenu)}}>
         <Icon name="plus" size={28}  style={styles.addNewIcon}/>
       </Pressable>
       <ScrollView style={styles.middleContainer}>
-        <View style={styles.MBHeaderContainer}>
-            <Text style={styles.MBHeaderText}>My Beds</Text>
-        </View>
-
-        {ANBMenu && <AddNewBedMenu />}
-        <MyBeds />
+      {ANBMenu && <AddNewBedMenu />}
+      <View style={styles.MBHeaderContainer}>
+          <Text style={styles.MBHeaderText}>My Beds</Text>
+      </View>
+      <MyBeds />
       </ScrollView>
     </>
-    
   )
 }
 
