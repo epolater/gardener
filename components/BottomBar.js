@@ -5,6 +5,7 @@ import { faLeaf } from '@fortawesome/free-solid-svg-icons/faLeaf'
 
 import HomeScreen from './HomeScreen'
 import BedGrid from './BedGrid'
+import SampleGrid from './SampleGrid'
 
 
 export default function BottomBar() {
@@ -14,7 +15,7 @@ export default function BottomBar() {
 
   return (
     <Tab.Navigator
-      initialRouteName = 'Home'
+      initialRouteName = 'BedGrid'
       screenOptions={{
         headerShown: false,
         tabBarStyle: styles.tabBar,
@@ -31,6 +32,7 @@ export default function BottomBar() {
         }}
       />
       <Tab.Screen name='BedGrid' component={BedGrid}/>
+      <Tab.Screen name='SampleGrid' component={SampleGrid}/>
     </Tab.Navigator>
   )
 }

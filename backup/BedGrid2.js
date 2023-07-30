@@ -118,7 +118,7 @@ export default function BedGrid () {
     //console.log(cellId)
   }
 
-  const [initialCell, setInitialCell] = useState({col_N:'', row_N:''})
+  const [initialCell, setInitialCell] = useState({row:'', col:''})
 
   const panResponder = useRef(null);
   panResponder.current = PanResponder.create({
@@ -129,12 +129,13 @@ export default function BedGrid () {
     onPanResponderGrant: (evt, gestureState) => {
       console.log('Finger touched down');
 
-      const col_N = Math.floor((gestureState.x0 - gridCoordinates.px) / cellHeight)
-      const row_N = Math.floor((gestureState.y0 - gridCoordinates.py) / cellHeight)
-      handleCellPress(`${col_N}-${row_N}`)
-      setInitialCell({col_N: col_N, row_N: row_N})
-      //console.log('Col:', col_N, 'Row:', row_N)
+      const row = Math.floor((gestureState.x0 - gridCoordinates.px) / cellHeight)
+      const col = Math.floor((gestureState.y0 - gridCoordinates.py) / cellHeight)
+      handleCellPress(`${row}-${col}`)
+      setInitialCell({row: row, col: col})
+      console.log('Row:',row, 'Col:' ,col)
 
+      //console.log(`${row}-${col}`, cellHeight)
       //console.log('Cell Height:',cellHeight)
       //console.log('gestureState.x0: ',gestureState.x0)
 
@@ -147,19 +148,20 @@ export default function BedGrid () {
     // Finger Moves
     onPanResponderMove: (evt, gestureState) => {
       //console.log('Finger is moving');
-      const newSelectedCells = []
-      const endCol_N = Math.floor((gestureState.moveX - gridCoordinates.px) / cellHeight);
-      const endRow_N = Math.floor((gestureState.moveY - gridCoordinates.py) / cellHeight);
-      //console.log('Col:', endCol_N, 'Row:', endRow_N)
-      //console.log(selectedCells.length)
-      //console.log('initial Col:', initialCell.col_N, 'Initial Row:', initialCell.row_N)
 
-      for (let col_N = initialCell.col_N; col_N <= endCol_N; col_N++ ) {
-        for (let row_N = initialCell.row_N; row_N <= endRow_N; row_N++ ) {
-          newSelectedCells.push(`${col_N}-${row_N}`)
+      const endRow = Math.floor((gestureState.moveX - gridCoordinates.px) / cellHeight);
+      const endCol = Math.floor((gestureState.moveY - gridCoordinates.py) / cellHeight);
+      //console.log('Current Row and Column: ',endRow, endCol)
+
+      for (let row = initialCell.row; row <= endRow; row++ ) {
+        for (let col = initialCell.col; col <= endCol; col++ ) {
+          handleCellPress(`${row}-${col}`)
         }
       }
-      setSelectedCells(newSelectedCells)
+
+      // const row = Math.floor((gestureState.moveX - gridCoordinates.px) / cellHeight);
+      // const col = Math.floor((gestureState.moveY - gridCoordinates.py) / cellHeight);
+      // handleCellPress(`${row}-${col}`)
 
       // setCoordinates({
       //   Cx: Math.floor(gestureState.moveX),
@@ -174,28 +176,25 @@ export default function BedGrid () {
   })
 
   // Creating the Layout Grid
-  const columns = []
-  for (let col_N = 0; col_N < xSide; col_N++) {
+  const rows = []
+  for (let row = 0; row < xSide; row++) {
     const cells = []
-    for (let row_N = 0; row_N < ySide; row_N++) {
+    for (let col = 0; col < ySide; col++) {
       cells.push(
         <View
-          key={row_N}
+          key={col}
           style={[
             styles.cell,
             {height: cellHeight, width: cellHeight},
-            selectedCells.includes(`${col_N}-${row_N}`) && styles.selectedCell,
+            selectedCells.includes(`${row}-${col}`) && styles.selectedCell,
             gridVisible && {borderWidth: 0}
           ]}
         >
-          {/*}
-          <Text style={{fontSize: 10,}}>X:{col_N}</Text>
-          <Text style={{fontSize: 10,}}>Y:{row_N}</Text>
-        */}
+          <Text style={{fontSize: 8,}}>Col:{col}</Text>
         </View>
       )
     }
-    columns.push(<View key={col_N} style={styles.column}>{cells}</View>)
+    rows.push(<View key={row} style={styles.row}>{cells}</View>)
   }
 
   return (
@@ -210,7 +209,7 @@ export default function BedGrid () {
           ref={myRef}
           onLayout={handleLayout}
         >
-            {columns}
+            {rows}
         </View>
       </View>
       {/*
@@ -247,9 +246,9 @@ const styles = StyleSheet.create({
     //borderColor: 'green'
   },
 
-  column: {
+  row: {
     flexDirection: 'column',
-    //borderWidth: 0.5,
+    //borderWidth: 1,
     //borderColor: 'yellow'
   },
 

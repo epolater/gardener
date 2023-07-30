@@ -24,7 +24,6 @@ export default function App() {
 
   return (
     <DataProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer theme={navTheme} >
         <View style={styles.topContainer}>
           <StatusBar style="auto" />
@@ -34,8 +33,7 @@ export default function App() {
         <View style={styles.bottomContainer}>
           <BottomBar />
         </View>
-      </NavigationContainer>
-      </GestureHandlerRootView>
+        </NavigationContainer>
     </DataProvider>
   );
 
