@@ -8,25 +8,12 @@ import AddNewBedMenu from './AddNewBedMenu'
 
 export default function HomeScreen () {
 
-  const [ANBMenu, onShowANBMenu] = useState(false)
+  // Conncet to DataContext
+  const {beds, deleteBed} = useContext(DataContext)
 
   // Delete Bed
-  const deleteBed = (id) => {
-    db.transaction(tx => {
-      tx.executeSql('DELETE from beds WHERE id=?',[id],
-      (txObj, result) => {
-        if (result.rowsAffected > 0) {
-          let newBeds = [...beds].filter(bed => bed.id !== id)
-          setBeds(newBeds)
-        }
-      },
-      (txObj, error) => console.log(error)
-      )
-    })
-  }
+  const handleDeleteBed = (id) => {deleteBed(id)}
 
-  // Retrieve data from the database by DataContext
-  const {beds} = useContext(DataContext)
 
   // Bed Cards Slider
   const MyBeds = () => {
@@ -40,7 +27,7 @@ export default function HomeScreen () {
               number={bed.number}
               width={bed.width}
               length={bed.length}
-              onDelete={deleteBed}
+              onDelete={handleDeleteBed}
             />
           </View>
         )
@@ -53,6 +40,8 @@ export default function HomeScreen () {
       </ScrollView>
     )
   }
+
+  const [ANBMenu, onShowANBMenu] = useState(false)
 
   return (
     <>

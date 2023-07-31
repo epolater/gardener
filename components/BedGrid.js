@@ -16,36 +16,46 @@ import { faChevronDown } from '@fortawesome/free-solid-svg-icons/'
 import { faChevronUp } from '@fortawesome/free-solid-svg-icons'
 import { faBorderNone } from '@fortawesome/free-solid-svg-icons'
 import { faBroom } from '@fortawesome/free-solid-svg-icons'
+import { faPlus } from '@fortawesome/free-solid-svg-icons'
 
 import DataContext from './DataContext'
 
 
 export default function BedGrid () {
 
+  // Retrieve data from the database by DataContext
+  const {beds} = useContext(DataContext)
+  const [selectedBed, setSelectedBed] = useState([])
+
+  // Bed Dropdown Selection Menu
+  const [selectedOption, setSelectedOption] = useState('Select an option ')
   const DropdownMenu = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedOption, setSelectedOption] = useState('Select an option ');
-  
-    // Retrieve data from the database by DataContext
-    const {beds} = useContext(DataContext)
-    const options = beds.map((bed) => bed.name)
-  
+    const options = beds.map((bed) => ({
+      id: bed.id,
+      name: bed.name,
+      number: bed.number,
+      width: bed.width,
+      length: bed.length,
+
+    }))
     const toggleDropdown = () => {setIsOpen((prevIsOpen) => !prevIsOpen)}
-  
+
     const handleOptionSelect = (option) => {
-      setSelectedOption(option);
-      setIsOpen(false);
+      setSelectedOption(option.name)
+      setIsOpen(false)
+      setSelectedBed(option)
     };
-  
+
     const renderOptionItem = ({ item }) => (
       <Pressable
-        style={[styles.BSMoptionItem, selectedOption===item?styles.BSMoptionItemSelected:{}]}
+        style={[styles.BSMoptionItem, selectedOption===item.name?styles.BSMoptionItemSelected:{}]}
         onPress={() => handleOptionSelect(item)}
       >
-        <Text>{item}</Text>
+        <Text>{item.name}</Text>
       </Pressable>
-    );
-  
+    )
+
     return (
       <View style={styles.BSMcontainer}>
         <Pressable style={styles.BSMdropdownButton} onPress={toggleDropdown}>
@@ -56,7 +66,7 @@ export default function BedGrid () {
           <FlatList
             data={options}
             renderItem={renderOptionItem}
-            keyExtractor={(item, index) => index.toString()}
+            keyExtractor={(item) => item.id.toString()}
             style={styles.BSMdropdownOptions}
           />
         )}
@@ -76,12 +86,23 @@ export default function BedGrid () {
         <Pressable onPress={() => setSelectedCells([])}>
           <FontAwesomeIcon icon={faBroom} size={24} style={styles.GRDgridMenuICons}/>
         </Pressable>
+        <Pressable onPress={() => {}}>
+          <FontAwesomeIcon icon={faPlus} size={24} style={styles.GRDgridMenuICons}/>
+        </Pressable>
       </View>
     )
   }
 
-  // Cell counts
-  const [xSide,ySide] = [12, 20]
+  // Lanes and Cell counts
+  const laneNum = selectedBed.length===0? 3: selectedBed.number
+  let cellsPerLane;
+  if (laneNum === 1 ) { cellsPerLane = 12}
+    else if (laneNum >= 2 && laneNum <= 4 ) { cellsPerLane = 12 / laneNum}
+    else if (laneNum >= 5 && laneNum <= 8) { cellsPerLane = 2}
+    else { cellsPerLane = 1}
+
+  let xSide = laneNum * cellsPerLane
+  let ySide = 2 * laneNum * cellsPerLane
 
   // Calculationg cell's width
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
@@ -102,10 +123,11 @@ export default function BedGrid () {
     })
   }
 
-  // Selecting Cells
+  // Selecting Cells ----------------------------------
   const [selectedCells, setSelectedCells] = useState([]);
   const [coordinates, setCoordinates] = useState({Cx:'', Cy:''})
 
+  // Single Selection
   const handleCellPress = (cellId) => {
     if (selectedCells.includes(cellId)) {
       // Cell is already selected, so remove it from the selection
@@ -117,9 +139,9 @@ export default function BedGrid () {
 
     //console.log(cellId)
   }
-
   const [initialCell, setInitialCell] = useState({col_N:'', row_N:''})
 
+  // Multiple Selection
   const panResponder = useRef(null);
   panResponder.current = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
@@ -173,7 +195,7 @@ export default function BedGrid () {
     },
   })
 
-  // Creating the Layout Grid
+  // Creating the Layout Grid ----------------------------
   const columns = []
   for (let col_N = 0; col_N < xSide; col_N++) {
     const cells = []
@@ -198,6 +220,24 @@ export default function BedGrid () {
     columns.push(<View key={col_N} style={styles.column}>{cells}</View>)
   }
 
+  // Creating Bed Layout ----------------------------
+  const BedLayout = () => {
+    const columns = []
+    for (let col = 0; col < laneNum; col++) {
+      columns.push(
+        <View
+          key={col}
+          style={[
+            styles.BLcolumn,
+            {width: cellHeight * cellsPerLane, height: cellHeight * ySide}
+          ]}
+        />
+      )
+    }
+
+    return (<View style={styles.BLContainer}>{columns}</View>)
+  }
+
   return (
     <>
     <DropdownMenu />
@@ -210,6 +250,7 @@ export default function BedGrid () {
           ref={myRef}
           onLayout={handleLayout}
         >
+          <BedLayout />
             {columns}
         </View>
       </View>
@@ -235,7 +276,7 @@ const styles = StyleSheet.create({
 
   gridContainer: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: 'left',
     //borderWidth: 2,
     //borderColor: 'blue'
   },
@@ -273,22 +314,27 @@ const styles = StyleSheet.create({
 
   GRDgridMenu: {
     height: 300,
-    width: 60,
+    width: 50,
     alignItems:'center',
     paddingTop: 20,
     backgroundColor: '#F6F6F6',
     borderRadius: 20,
     position: 'absolute',
     top: 100,
-    right: 0,
+    right: -10,
     marginHorizontal: 20,
-    zIndex: 9,
+    zIndex: 4,
 
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
   },
+  GRDgridMenuICons: {
+    marginBottom: 20,
+    color: '#46785a'
+  },
+
 
   BSMcontainer: {
     paddingHorizontal: 20,
@@ -322,14 +368,14 @@ const styles = StyleSheet.create({
     borderColor: 'lightgrey',
     borderRadius: 10,
     backgroundColor: 'white',
-    zIndex: 9,
+    zIndex: 19,
   },
 
   BSMoptionItem: {
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: 'lightgrey',
-    zIndex: 9,
+    zIndex: 19,
   },
   BSMoptionItemSelected: {
     backgroundColor: '#DFF1B7'
@@ -341,10 +387,20 @@ const styles = StyleSheet.create({
     color: "#46785a",
   },
 
-  GRDgridMenuICons: {
-    marginBottom: 20,
-    color: '#46785a'
+  BLContainer: {
+    //flex: 1,
+    flexDirection: 'row',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    zIndex: 2,
+    borderWidth:1,
+    //borderColor: 'red',
   },
-
+  BLcolumn: {
+    borderWidth: 1,
+    //borderRightWidth: 1,
+    borderColor: 'black',
+  },
 
 })

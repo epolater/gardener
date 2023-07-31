@@ -27,7 +27,7 @@ export default function AddNewBedMenu () {
   // Open database if not exists and retrieve data from database
   const db = SQLite.openDatabase('mydatabase.db')
   //const [beds, setBeds] = useState([])
-  const {setBeds} = useContext(DataContext)
+  const {beds, setBeds, insertBed} = useContext(DataContext)
 
   // Creating Beds Table
   useEffect(() => {
@@ -48,36 +48,10 @@ export default function AddNewBedMenu () {
 
   // Add New Bed (Save Input to database)
   const addNewBed = () => {
-    db.transaction(tx => {
-      tx.executeSql(
-        'INSERT INTO beds (name, number, width, length) values (?,?,?,?)',
-        [name, parseInt(number), parseInt(width), parseInt(length)],
-        (txobj, result) => {
-          if (result.rowsAffected > 0) {
-            Alert.alert('Success', 'New bed added', [{ text: 'OK' }])
-          } else {Alert.alert('Error', 'Failed to add new bed')}
-        },
-        (_, error) => {
-          console.log('Error retrieving data from table:', error);
-        }
-        )
-    })
-
-    // Set Beds List
-    db.transaction(tx => {
-      tx.executeSql('SELECT * FROM beds',null,
-        (_, result) => setBeds(result.rows._array.reverse()),
-        (_, error) => console.log(error)
-      )
-    })
-
+    const newBed = {name: name, number: number, width: width, length: length}
+    insertBed(newBed)
     // Set Input fields to none
-    onChangeName('')
-    onChangeNumber('')
-    onChangeWidth('')
-    onChangeLength('')
-
-    console.log("add new button is pressed")
+    onChangeName(''); onChangeNumber(''); onChangeWidth(''); onChangeLength('');
   }
 
   // Disable Add Button
