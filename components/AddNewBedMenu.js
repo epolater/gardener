@@ -24,26 +24,8 @@ export default function AddNewBedMenu () {
     return numericValue
   }
 
-  // Open database if not exists and retrieve data from database
-  const db = SQLite.openDatabase('mydatabase.db')
-  //const [beds, setBeds] = useState([])
+  // Retrieve data from database
   const {beds, setBeds, insertBed} = useContext(DataContext)
-
-  // Creating Beds Table
-  useEffect(() => {
-    const createDatabase = () => {
-        db.transaction(tx => {
-          tx.executeSql(
-            'CREATE TABLE IF NOT EXISTS beds (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, number INTEGER, width INTEGER, length INTEGER)',
-            [],
-            (_, error) => {console.log('Error creating table "beds":', error)}
-          )
-        })
-      }
-
-    createDatabase();
-
-  }, [])
 
 
   // Add New Bed (Save Input to database)
