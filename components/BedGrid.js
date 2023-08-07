@@ -4,26 +4,22 @@ import {
   StyleSheet,
   Pressable,
   PanResponder,
-  TouchableOpacity,
-  ScrollView,
-  FlatList,
-  Modal, } from 'react-native'
+  Alert,
+  FlatList, } from 'react-native'
 import React, { useState, useContext, useRef, useEffect } from 'react'
 
 // Icons
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
-import { faChevronDown } from '@fortawesome/free-solid-svg-icons/'
-import { faChevronUp } from '@fortawesome/free-solid-svg-icons'
-import { faBorderNone } from '@fortawesome/free-solid-svg-icons'
-import { faBroom } from '@fortawesome/free-solid-svg-icons'
-import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { 
+  faChevronDown,faStarOfDavid,faChevronUp,faBorderNone,faBroom,
+  faPlus, } from '@fortawesome/free-solid-svg-icons/'
 
 import DataContext from './DataContext'
 
 
 export default function BedGrid () {
 
-  // Retrieve data from the database by DataContext
+  // Retrieve data from the database
   const {beds} = useContext(DataContext)
   const [selectedBed, setSelectedBed] = useState([])
 
@@ -86,8 +82,11 @@ export default function BedGrid () {
         <Pressable onPress={() => setSelectedCells([])}>
           <FontAwesomeIcon icon={faBroom} size={24} style={styles.GRDgridMenuICons}/>
         </Pressable>
-        <Pressable onPress={() => {}}>
+        <Pressable onPress={() => {createBedDivision()}}>
           <FontAwesomeIcon icon={faPlus} size={24} style={styles.GRDgridMenuICons}/>
+        </Pressable>
+        <Pressable onPress={() => {}}>
+          <FontAwesomeIcon icon={faStarOfDavid} size={24} style={styles.GRDgridMenuICons}/>
         </Pressable>
       </View>
     )
@@ -115,7 +114,7 @@ export default function BedGrid () {
     const { width, height } = event.nativeEvent.layout
     setContainerSize({ width, height })
     //console.log('Native Event.layot',event.nativeEvent.layout)
-    console.log('1Container Size:',height)
+    //console.log('1Container Size:',height)
     setCellHeight(height / ySide)
 
     myRef.current.measure((fx, fy, width, height, px, py) => {
@@ -123,79 +122,12 @@ export default function BedGrid () {
     })
   }
 
-  // Selecting Cells ----------------------------------
-  const [selectedCells, setSelectedCells] = useState([]);
-  const [coordinates, setCoordinates] = useState({Cx:'', Cy:''})
+  // Creating the Grid Layout ----------------------------
+  const [selectedCells, setSelectedCells] = useState([])
+  const [endRow_N, setEndRow_N] = useState()
+  const [endCol_N, setEndCol_N] = useState()
 
-  // Single Selection
-  const handleCellPress = (cellId) => {
-    if (selectedCells.includes(cellId)) {
-      // Cell is already selected, so remove it from the selection
-      //setSelectedCells(selectedCells.filter((cell) => cell !== cellId));
-    } else {
-      // Cell is not selected, so add it to the selection
-      setSelectedCells([...selectedCells, cellId]);
-    }
-
-    //console.log(cellId)
-  }
-  const [initialCell, setInitialCell] = useState({col_N:'', row_N:''})
-
-  // Multiple Selection
-  const panResponder = useRef(null);
-  panResponder.current = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
-
-    // Finger Touchdown
-    onPanResponderGrant: (evt, gestureState) => {
-      console.log('Finger touched down');
-
-      const col_N = Math.floor((gestureState.x0 - gridCoordinates.px) / cellHeight)
-      const row_N = Math.floor((gestureState.y0 - gridCoordinates.py) / cellHeight)
-      handleCellPress(`${col_N}-${row_N}`)
-      setInitialCell({col_N: col_N, row_N: row_N})
-      //console.log('Col:', col_N, 'Row:', row_N)
-
-      //console.log('Cell Height:',cellHeight)
-      //console.log('gestureState.x0: ',gestureState.x0)
-
-      // setCoordinates({
-      //   Cx: Math.floor(gestureState.x0),
-      //   Cy: Math.floor(gestureState.y0)
-      // })
-    },
-
-    // Finger Moves
-    onPanResponderMove: (evt, gestureState) => {
-      //console.log('Finger is moving');
-      const newSelectedCells = []
-      const endCol_N = Math.floor((gestureState.moveX - gridCoordinates.px) / cellHeight);
-      const endRow_N = Math.floor((gestureState.moveY - gridCoordinates.py) / cellHeight);
-      //console.log('Col:', endCol_N, 'Row:', endRow_N)
-      //console.log(selectedCells.length)
-      //console.log('initial Col:', initialCell.col_N, 'Initial Row:', initialCell.row_N)
-
-      for (let col_N = initialCell.col_N; col_N <= endCol_N; col_N++ ) {
-        for (let row_N = initialCell.row_N; row_N <= endRow_N; row_N++ ) {
-          newSelectedCells.push(`${col_N}-${row_N}`)
-        }
-      }
-      setSelectedCells(newSelectedCells)
-
-      // setCoordinates({
-      //   Cx: Math.floor(gestureState.moveX),
-      //   Cy: Math.floor(gestureState.moveY)
-      // })
-    },
-
-    // Finger Release
-    onPanResponderRelease: (evt, gestureState) => {
-      console.log('Finger released');
-    },
-  })
-
-  // Creating the Layout Grid ----------------------------
+  // Grid
   const columns = []
   for (let col_N = 0; col_N < xSide; col_N++) {
     const cells = []
@@ -220,7 +152,78 @@ export default function BedGrid () {
     columns.push(<View key={col_N} style={styles.column}>{cells}</View>)
   }
 
-  // Creating Bed Layout ----------------------------
+  //const [coordinates, setCoordinates] = useState({Cx:'', Cy:''})
+
+  // Single Cell Selection
+  const handleCellPress = (cellId) => {
+    if (selectedCells.includes(cellId)) {
+      // Cell is already selected, so remove it from the selection
+      //setSelectedCells(selectedCells.filter((cell) => cell !== cellId));
+    } else {
+      // Cell is not selected, so add it to the selection
+      setSelectedCells([...selectedCells, cellId]);
+    }
+
+    //console.log(cellId)
+  }
+
+  // Multiple Cell Selection
+  const [initialCell, setInitialCell] = useState({col_N:'', row_N:''})
+  const panResponder = useRef(null)
+
+  panResponder.current = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: () => true,
+
+    /// Finger Touchdown
+    onPanResponderGrant: (evt, gestureState) => {
+      console.log('Finger touched down');
+
+      const col_N = Math.floor((gestureState.x0 - gridCoordinates.px) / cellHeight)
+      const row_N = Math.floor((gestureState.y0 - gridCoordinates.py) / cellHeight)
+      handleCellPress(`${col_N}-${row_N}`)
+      setInitialCell({col_N: col_N, row_N: row_N})
+      //console.log('Col:', col_N, 'Row:', row_N)
+
+      //console.log('Cell Height:',cellHeight)
+      //console.log('gestureState.x0: ',gestureState.x0)
+
+      // setCoordinates({
+      //   Cx: Math.floor(gestureState.x0),
+      //   Cy: Math.floor(gestureState.y0)
+      // })
+    },
+
+    /// Finger Moves
+    onPanResponderMove: (evt, gestureState) => {
+      //console.log('Finger is moving');
+      const newSelectedCells = []
+      const endCol_N = Math.floor((gestureState.moveX - gridCoordinates.px) / cellHeight);
+      const endRow_N = Math.floor((gestureState.moveY - gridCoordinates.py) / cellHeight);
+
+      for (let col_N = initialCell.col_N; col_N <= endCol_N; col_N++ ) {
+        for (let row_N = initialCell.row_N; row_N <= endRow_N; row_N++ ) {
+          newSelectedCells.push(`${col_N}-${row_N}`)
+        }
+      }
+      setSelectedCells(newSelectedCells)
+      setEndCol_N(endCol_N); setEndRow_N(endRow_N)
+      //console.log(endCol_N, endRow_N)
+
+      // setCoordinates({
+      //   Cx: Math.floor(gestureState.moveX),
+      //   Cy: Math.floor(gestureState.moveY)
+      // })
+    },
+
+    /// Finger Release
+    onPanResponderRelease: (evt, gestureState) => {
+      console.log('Finger released');
+    },
+  })
+
+
+  // Creating Bed Layout ---------------------------
   const BedLayout = () => {
     const columns = []
     for (let col = 0; col < laneNum; col++) {
@@ -238,24 +241,88 @@ export default function BedGrid () {
     return (<View style={styles.BLContainer}>{columns}</View>)
   }
 
+  // Creating Division in Bed
+  const [divisions, setDivisions] = useState([])
+  const [divCells, setDivCells] = useState([])
+
+  const createBedDivision = () => {
+
+    /// Check for existing Division Cells
+    let selectionInDivs = false
+    selectedCells.forEach((cell) => {
+      if (divCells.includes(cell)) {selectionInDivs = true}
+    })
+
+    /// Create Division
+    if (selectionInDivs) {Alert.alert('Selection Error', 'Selection clashes', [{ text: 'OK' }])}
+    else {
+      const newDivision = {
+        startCol: initialCell.col_N,
+        startRow: initialCell.row_N,
+        endCol: endCol_N,
+        endRow: endRow_N,
+      }
+      setDivisions([...divisions, newDivision])
+
+      /// Clean selected cells
+      setSelectedCells([])
+
+      /// Add selected cells to Divisions' cell array
+      setDivCells((prevDivCells) => [...prevDivCells, ...selectedCells])
+    }
+
+
+  }
+
+  const Divisions = () => {
+    return divisions.map((div, index)=>{
+
+      // for (let i = div.startCol; i <= div.endCol; i++) {
+      //   for (let j = div.startRow; j <= div.endRow; j++) {
+      //     divCells.push(`${j}-${i}`)
+      //   }
+      // }
+
+      const height = (div.endRow - div.startRow + 1) * cellHeight
+      const width = (div.endCol - div.startCol + 1) * cellHeight
+      const x = div.startCol * cellHeight
+      const y = div.startRow * cellHeight
+      return (
+        <View key={index}
+          style={{
+            width: width,
+            height: height,
+            backgroundColor:'rgba(128,128, 128, 0.5)',
+            position: 'absolute',
+            top: y,
+            left: x,
+            zIndex: 5,
+          }}
+        ></View>
+      )
+    })
+  }
+
+
   return (
     <>
     <DropdownMenu />
     <GridMenu />
     <View style={styles.GRDscreenContainer} >
       <View style={styles.gridContainer}>
-        <View
+        <Divisions />
+        <View style={styles.grid}
           {...panResponder.current.panHandlers}
-          style={styles.grid}
           ref={myRef}
           onLayout={handleLayout}
         >
           <BedLayout />
-            {columns}
+          {columns}
         </View>
       </View>
       {/*
-      <Text>Number of Beds: {beds.length} | Number of Cells: {selectedCells.length}</Text>
+      <Text>No. of Cells: {selectedCells}</Text>
+      <Text>No. Div Cells : {divCells}</Text>
       <Text>X: {coordinates.Cx} Y: {coordinates.Cy}</Text>
       <Text>Grid Coordinates {gridCoordinates.px}, {gridCoordinates.py}</Text>
       */}
@@ -334,7 +401,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: '#46785a'
   },
-
 
   BSMcontainer: {
     paddingHorizontal: 20,

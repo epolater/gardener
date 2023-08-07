@@ -32,9 +32,8 @@ export const DataProvider = ({ children }) => {
         (_, result) => setBeds(result.rows._array.reverse()),
         (_, error) => console.log(error)
       )
-
     })
-    console.log("Retrieve data from the database")
+    //console.log("Retrieve data from the database")
   }, [])
 
   // Insert a new bed into the database

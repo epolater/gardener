@@ -1,6 +1,5 @@
 import { View, Text, TextInput, StyleSheet, Pressable, Alert } from 'react-native'
 import { useState, useEffect } from 'react'
-import * as SQLite from 'expo-sqlite'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faXmarkCircle } from '@fortawesome/free-solid-svg-icons/faXmarkCircle'
 import { useContext } from 'react'
@@ -32,6 +31,7 @@ export default function AddNewBedMenu () {
   const addNewBed = () => {
     const newBed = {name: name, number: number, width: width, length: length}
     insertBed(newBed)
+  
     // Set Input fields to none
     onChangeName(''); onChangeNumber(''); onChangeWidth(''); onChangeLength('');
   }
