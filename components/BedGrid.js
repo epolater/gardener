@@ -15,6 +15,7 @@ import {
   faPlus, } from '@fortawesome/free-solid-svg-icons/'
 
 import DataContext from './DataContext'
+import Messages from './Messages'
 
 
 export default function BedGrid () {
@@ -82,14 +83,24 @@ export default function BedGrid () {
         <Pressable onPress={() => setSelectedCells([])}>
           <FontAwesomeIcon icon={faBroom} size={24} style={styles.GRDgridMenuICons}/>
         </Pressable>
-        <Pressable onPress={() => {createBedDivision()}}>
-          <FontAwesomeIcon icon={faPlus} size={24} style={styles.GRDgridMenuICons}/>
+        <Pressable disabled={!cellsSeleceted} onPress={() => {createBedDivision()}}>
+          <FontAwesomeIcon icon={faPlus} size={24} style={[styles.GRDgridMenuICons , !cellsSeleceted && {color: 'lightgray'}]} />
         </Pressable>
-        <Pressable onPress={() => {}}>
+        <Pressable onPress={() => {}} >
           <FontAwesomeIcon icon={faStarOfDavid} size={24} style={styles.GRDgridMenuICons}/>
         </Pressable>
       </View>
     )
+  }
+
+  // Show Info Messages
+  const [message, setMessage] = useState({status: false, text: ''})
+  const ShowMessage = (text) => {
+    setMessage({status: true, text: text})
+    setTimeout(() => {
+      setMessage({status: false, text: ''})
+    }, 2000)
+
   }
 
   // Lanes and Cell counts
@@ -124,6 +135,7 @@ export default function BedGrid () {
 
   // Creating the Grid Layout ----------------------------
   const [selectedCells, setSelectedCells] = useState([])
+  const [cellsSeleceted, setCellsSelected] = useState(false)
   const [endRow_N, setEndRow_N] = useState()
   const [endCol_N, setEndCol_N] = useState()
 
@@ -161,7 +173,7 @@ export default function BedGrid () {
       //setSelectedCells(selectedCells.filter((cell) => cell !== cellId));
     } else {
       // Cell is not selected, so add it to the selection
-      setSelectedCells([...selectedCells, cellId]);
+      setSelectedCells([cellId]);
     }
 
     //console.log(cellId)
@@ -177,7 +189,7 @@ export default function BedGrid () {
 
     /// Finger Touchdown
     onPanResponderGrant: (evt, gestureState) => {
-      console.log('Finger touched down');
+      //console.log('Finger touched down');
 
       const col_N = Math.floor((gestureState.x0 - gridCoordinates.px) / cellHeight)
       const row_N = Math.floor((gestureState.y0 - gridCoordinates.py) / cellHeight)
@@ -210,6 +222,9 @@ export default function BedGrid () {
       setEndCol_N(endCol_N); setEndRow_N(endRow_N)
       //console.log(endCol_N, endRow_N)
 
+      // Enable add division button
+      setCellsSelected(true)
+
       // setCoordinates({
       //   Cx: Math.floor(gestureState.moveX),
       //   Cy: Math.floor(gestureState.moveY)
@@ -218,7 +233,7 @@ export default function BedGrid () {
 
     /// Finger Release
     onPanResponderRelease: (evt, gestureState) => {
-      console.log('Finger released');
+      //console.log('Finger released');
     },
   })
 
@@ -254,7 +269,7 @@ export default function BedGrid () {
     })
 
     /// Create Division
-    if (selectionInDivs) {Alert.alert('Selection Error', 'Selection clashes', [{ text: 'OK' }])}
+    if (selectionInDivs) {Alert.alert('Selection Error', 'Selection clashes with other divisions', [{ text: 'OK' }])}
     else {
       const newDivision = {
         startCol: initialCell.col_N,
@@ -271,18 +286,16 @@ export default function BedGrid () {
       setDivCells((prevDivCells) => [...prevDivCells, ...selectedCells])
     }
 
+      /// Show Success Message
+      if (!selectionInDivs) {ShowMessage('New bed division created')}
 
+      /// Disable add division button
+      setCellsSelected(false)
+    
   }
 
   const Divisions = () => {
     return divisions.map((div, index)=>{
-
-      // for (let i = div.startCol; i <= div.endCol; i++) {
-      //   for (let j = div.startRow; j <= div.endRow; j++) {
-      //     divCells.push(`${j}-${i}`)
-      //   }
-      // }
-
       const height = (div.endRow - div.startRow + 1) * cellHeight
       const width = (div.endCol - div.startCol + 1) * cellHeight
       const x = div.startCol * cellHeight
@@ -292,7 +305,9 @@ export default function BedGrid () {
           style={{
             width: width,
             height: height,
-            backgroundColor:'rgba(128,128, 128, 0.5)',
+            backgroundColor:'rgba(170,237, 121, 0.5)',
+            borderWidth: 1,
+            borderColor: 'rgba(160,220, 100, 1)',
             position: 'absolute',
             top: y,
             left: x,
@@ -308,6 +323,9 @@ export default function BedGrid () {
     <>
     <DropdownMenu />
     <GridMenu />
+    { message.status &&
+    <Messages message={message.text} duration={1000} />
+    }
     <View style={styles.GRDscreenContainer} >
       <View style={styles.gridContainer}>
         <Divisions />
@@ -376,7 +394,7 @@ const styles = StyleSheet.create({
   },
 
   selectedCell: {
-    backgroundColor: 'lightgreen'
+    backgroundColor: 'rgba(125, 125, 125, 0.15)'
   },
 
   GRDgridMenu: {
