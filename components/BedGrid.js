@@ -7,18 +7,21 @@ import {
   Alert,
   FlatList, } from 'react-native'
 import React, { useState, useContext, useRef, useEffect } from 'react'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { useNavigation } from '@react-navigation/native'
 
 // Icons
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { 
-  faChevronDown,faStarOfDavid,faChevronUp,faBorderNone,faBroom,
+  faChevronDown,faChevronUp,faBorderNone,faBroom,
   faPlus, } from '@fortawesome/free-solid-svg-icons/'
 
 import DataContext from './DataContext'
 import Messages from './Messages'
+import AddProducts from './AddProducts'
+import { NavigationContainer } from '@react-navigation/native'
 
-
-export default function BedGrid () {
+export default function BedGrid ({navigation}) {
 
   // Retrieve data from the database
   const {beds} = useContext(DataContext)
@@ -85,9 +88,6 @@ export default function BedGrid () {
         </Pressable>
         <Pressable disabled={!cellsSeleceted} onPress={() => {createBedDivision()}}>
           <FontAwesomeIcon icon={faPlus} size={24} style={[styles.GRDgridMenuICons , !cellsSeleceted && {color: 'lightgray'}]} />
-        </Pressable>
-        <Pressable onPress={() => {}} >
-          <FontAwesomeIcon icon={faStarOfDavid} size={24} style={styles.GRDgridMenuICons}/>
         </Pressable>
       </View>
     )
@@ -276,6 +276,7 @@ export default function BedGrid () {
         startRow: initialCell.row_N,
         endCol: endCol_N,
         endRow: endRow_N,
+        label: `${initialCell.col_N}-${initialCell.row_N},${endCol_N}-${endRow_N}`,
       }
       setDivisions([...divisions, newDivision])
 
@@ -301,11 +302,11 @@ export default function BedGrid () {
       const x = div.startCol * cellHeight
       const y = div.startRow * cellHeight
       return (
-        <View key={index}
+        <Pressable key={index} onPress={() =>{navigation.navigate('AddProducts')}}
           style={{
             width: width,
             height: height,
-            backgroundColor:'rgba(170,237, 121, 0.5)',
+            backgroundColor:'rgba(170,237, 121, 0.15)',
             borderWidth: 1,
             borderColor: 'rgba(160,220, 100, 1)',
             position: 'absolute',
@@ -313,7 +314,9 @@ export default function BedGrid () {
             left: x,
             zIndex: 5,
           }}
-        ></View>
+        >
+          <Text>{div.label}</Text>
+        </Pressable>
       )
     })
   }
@@ -345,6 +348,7 @@ export default function BedGrid () {
       <Text>Grid Coordinates {gridCoordinates.px}, {gridCoordinates.py}</Text>
       */}
     </View>
+
     </>
   )
 }
@@ -425,7 +429,7 @@ const styles = StyleSheet.create({
     alignItems: 'left',
     justifyContent: 'center',
     marginTop: 20,
-    zIndex: 9,
+    zIndex: 5,
   },
   BSMdropdownButton: {
     flexDirection: 'row',

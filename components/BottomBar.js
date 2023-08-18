@@ -1,11 +1,10 @@
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, SafeAreaView } from 'react-native'
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faLeaf } from '@fortawesome/free-solid-svg-icons/faLeaf'
 
 import HomeScreen from './HomeScreen'
 import BedGrid from './BedGrid'
-import SampleGrid from './SampleGrid'
 
 
 export default function BottomBar() {
@@ -32,7 +31,7 @@ export default function BottomBar() {
         }}
       />
       <Tab.Screen name='BedGrid' component={BedGrid}/>
-      <Tab.Screen name='SampleGrid' component={SampleGrid}/>
+      
     </Tab.Navigator>
   )
 }
@@ -41,7 +40,7 @@ export default function BottomBar() {
 // Styles
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: '#46785a',
+    backgroundColor: '#46785A',
   },
 
 

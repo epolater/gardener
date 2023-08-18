@@ -3,15 +3,18 @@ import { StyleSheet, View } from 'react-native'
 import React, { useState } from 'react'
 import {NavigationContainer, DefaultTheme} from '@react-navigation/native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import {DataProvider} from './components/DataContext'
 import TopBar from './components/TopBar'
 import BottomBar from './components/BottomBar'
+import AddProducts from './components/AddProducts'
 
 
 export default function App() {
 
   const [ANBMenu, onShowANBMenu] = useState(false)
+  const Stack = createNativeStackNavigator()
 
   // Make Navigation Container backgroundcolor transparent
   const navTheme = {
@@ -30,10 +33,26 @@ export default function App() {
           <TopBar />
         </View>
 
-        <View style={styles.bottomContainer}>
-          <BottomBar />
-        </View>
-        </NavigationContainer>
+        <Stack.Navigator >
+          <Stack.Screen 
+            name='BottomBar'
+            component={BottomBar}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen 
+            name='AddProducts'
+            component={AddProducts}
+            options={() => ({
+              title: 'Add Products',
+              headerBackVisible: true,
+              headerBackTitleVisible: false,
+              headerStyle: {backgroundColor: '#46785A'},
+              headerTitleStyle: {color: 'white'},
+              headerTintColor: 'white'
+            })}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
     </DataProvider>
   );
 
@@ -45,12 +64,6 @@ const styles = StyleSheet.create({
   topContainer: {
     flex: 0.13,
     zIndex: 9,
-  },
-
-  middleContainer: {
-    flex:0.7,
-    backgroundColor: 'white',
-    padding: 20,
   },
 
   bottomContainer: {
