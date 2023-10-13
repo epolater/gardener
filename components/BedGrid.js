@@ -76,7 +76,7 @@ export default function BedGrid ({navigation}) {
 
   // Grid Menu
   const [gridVisible, setGridVisible] = useState(false)
- 
+
   const GridMenu = () => {
     return (
       <View style={styles.GRDgridMenu}>
@@ -295,6 +295,7 @@ export default function BedGrid ({navigation}) {
     
   }
 
+  // Show Divisions
   const Divisions = () => {
     return divisions.map((div, index)=>{
       const height = (div.endRow - div.startRow + 1) * cellHeight
@@ -315,7 +316,7 @@ export default function BedGrid ({navigation}) {
             zIndex: 5,
           }}
         >
-          <Text>{div.label}</Text>
+          <Text>Label: {div.label}</Text>
         </Pressable>
       )
     })
