@@ -1,9 +1,9 @@
 import { View, Text, StyleSheet, Pressable, Animated } from 'react-native'
 import React, { useRef, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
-import { faTrash } from '@fortawesome/free-solid-svg-icons/faTrash'
+import { faTrash, faPen } from '@fortawesome/free-solid-svg-icons/'
 
-export default function BedSumCard ({id, name, number, width, length, onDelete}) {
+export default function BedSumCard ({id, name, number, width, length, onDelete, navigation}) {
 
   const cardWidth = useRef(new Animated.Value(350)).current
 
@@ -14,6 +14,8 @@ export default function BedSumCard ({id, name, number, width, length, onDelete})
       useNativeDriver: false,
     }).start(() => {onDelete(id)})
   }
+
+  const editBed = () => {navigation.navigate('BedGrid', {data: {id, name}}) }
 
   useEffect(() => {cardWidth.setValue(350)})
 
@@ -41,8 +43,11 @@ export default function BedSumCard ({id, name, number, width, length, onDelete})
           </View>
         </View>
         <View style={styles.BCSIconContainer}>
+          <Pressable onPress={editBed}>
+            <FontAwesomeIcon icon={faPen} size={18} style={styles.Icons}/>
+          </Pressable>
           <Pressable onPress={deleteCard}>
-            <FontAwesomeIcon icon={faTrash} size={16} style={styles.thrashIcon}/>
+            <FontAwesomeIcon icon={faTrash} size={18} style={styles.Icons}/>
           </Pressable>
         </View>
       </View>
@@ -104,11 +109,13 @@ const styles = StyleSheet.create({
   },
 
   BCSIconContainer: {
-    alignItems: 'flex-end',
-    padding: 15,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    padding: 10,
   },
-  thrashIcon: {
-    color: 'lightgray',
 
+  Icons: {
+    color: '#46785A',
+    marginHorizontal: 7,
   },
 })

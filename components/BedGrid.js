@@ -21,58 +21,63 @@ import Messages from './Messages'
 import AddProducts from './AddProducts'
 import { NavigationContainer } from '@react-navigation/native'
 
-export default function BedGrid ({navigation}) {
+export default function BedGrid ({navigation, route}) {
 
   // Retrieve data from the database
-  const {beds} = useContext(DataContext)
-  const [selectedBed, setSelectedBed] = useState([])
+  const {beds, divisions, insertDivision} = useContext(DataContext)
+  
+  // Selected Bed
+  const bed_id = route.params?.data.id
+  const bed = beds.filter((bed) => bed.id===bed_id)
+  const selectedBed = bed[0]
+
 
   // Bed Dropdown Selection Menu
-  const [selectedOption, setSelectedOption] = useState('Select an option ')
-  const DropdownMenu = () => {
-    const [isOpen, setIsOpen] = useState(false);
-    const options = beds.map((bed) => ({
-      id: bed.id,
-      name: bed.name,
-      number: bed.number,
-      width: bed.width,
-      length: bed.length,
+  // const [selectedOption, setSelectedOption] = useState('Select an option ')
+  // const DropdownMenu = () => {
+  //   const [isOpen, setIsOpen] = useState(false);
+  //   const options = beds.map((bed) => ({
+  //     id: bed.id,
+  //     name: bed.name,
+  //     number: bed.number,
+  //     width: bed.width,
+  //     length: bed.length,
 
-    }))
-    const toggleDropdown = () => {setIsOpen((prevIsOpen) => !prevIsOpen)}
+  //   }))
+  //   const toggleDropdown = () => {setIsOpen((prevIsOpen) => !prevIsOpen)}
 
-    const handleOptionSelect = (option) => {
-      setSelectedOption(option.name)
-      setIsOpen(false)
-      setSelectedBed(option)
-    };
+  //   const handleOptionSelect = (option) => {
+  //     setSelectedOption(option.name)
+  //     setIsOpen(false)
+  //     setSelectedBed(option)
+  //   };
 
-    const renderOptionItem = ({ item }) => (
-      <Pressable
-        style={[styles.BSMoptionItem, selectedOption===item.name?styles.BSMoptionItemSelected:{}]}
-        onPress={() => handleOptionSelect(item)}
-      >
-        <Text>{item.name}</Text>
-      </Pressable>
-    )
+  //   const renderOptionItem = ({ item }) => (
+  //     <Pressable
+  //       style={[styles.BSMoptionItem, selectedOption===item.name?styles.BSMoptionItemSelected:{}]}
+  //       onPress={() => handleOptionSelect(item)}
+  //     >
+  //       <Text>{item.name}</Text>
+  //     </Pressable>
+  //   )
 
-    return (
-      <View style={styles.BSMcontainer}>
-        <Pressable style={styles.BSMdropdownButton} onPress={toggleDropdown}>
-          <Text style={styles.BSMdropdownButtonText}>{selectedOption}</Text>
-          <FontAwesomeIcon icon={ !isOpen? faChevronDown: faChevronUp  } size={15} style={styles.chevroIcon}/>
-        </Pressable>
-        {isOpen && (
-          <FlatList
-            data={options}
-            renderItem={renderOptionItem}
-            keyExtractor={(item) => item.id.toString()}
-            style={styles.BSMdropdownOptions}
-          />
-        )}
-      </View>
-    );
-  }
+  //   return (
+  //     <View style={styles.BSMcontainer}>
+  //       <Pressable style={styles.BSMdropdownButton} onPress={toggleDropdown}>
+  //         <Text style={styles.BSMdropdownButtonText}>{selectedOption}</Text>
+  //         <FontAwesomeIcon icon={ !isOpen? faChevronDown: faChevronUp  } size={15} style={styles.chevroIcon}/>
+  //       </Pressable>
+  //       {isOpen && (
+  //         <FlatList
+  //           data={options}
+  //           renderItem={renderOptionItem}
+  //           keyExtractor={(item) => item.id.toString()}
+  //           style={styles.BSMdropdownOptions}
+  //         />
+  //       )}
+  //     </View>
+  //   );
+  // }
 
   // Grid Menu
   const [gridVisible, setGridVisible] = useState(false)
@@ -257,7 +262,7 @@ export default function BedGrid ({navigation}) {
   }
 
   // Creating Division in Bed
-  const [divisions, setDivisions] = useState([])
+  //const [divisions, setDivisions] = useState([])
   const [divCells, setDivCells] = useState([])
 
   const createBedDivision = () => {
@@ -269,7 +274,9 @@ export default function BedGrid ({navigation}) {
     })
 
     /// Create Division
-    if (selectionInDivs) {Alert.alert('Selection Error', 'Selection clashes with other divisions', [{ text: 'OK' }])}
+    if (selectionInDivs) {
+      Alert.alert('Selection Error', 'Selection clashes with other divisions', [{ text: 'OK' }])
+    }
     else {
       const newDivision = {
         startCol: initialCell.col_N,
@@ -278,7 +285,10 @@ export default function BedGrid ({navigation}) {
         endRow: endRow_N,
         label: `${initialCell.col_N}-${initialCell.row_N},${endCol_N}-${endRow_N}`,
       }
-      setDivisions([...divisions, newDivision])
+      //setDivisions([...divisions, newDivision])
+
+      /// Add Division to database
+      insertDivision(JSON.stringify(newDivision), selectedBed.id)
 
       /// Clean selected cells
       setSelectedCells([])
@@ -292,31 +302,32 @@ export default function BedGrid ({navigation}) {
 
       /// Disable add division button
       setCellsSelected(false)
-    
   }
 
   // Show Divisions
   const Divisions = () => {
-    return divisions.map((div, index)=>{
-      const height = (div.endRow - div.startRow + 1) * cellHeight
-      const width = (div.endCol - div.startCol + 1) * cellHeight
-      const x = div.startCol * cellHeight
-      const y = div.startRow * cellHeight
+    const filteredDivisions = divisions.filter((div) => div.bed_id === bed_id)
+    return filteredDivisions.map((div, index)=>{
+      const data = JSON.parse(div.divdata)
+      const height = (data.endRow - data.startRow + 1) * cellHeight
+      const width = (data.endCol - data.startCol + 1) * cellHeight
+      const x = data.startCol * cellHeight
+      const y = data.startRow * cellHeight
       return (
         <Pressable key={index} onPress={() =>{navigation.navigate('AddProducts')}}
           style={{
             width: width,
             height: height,
-            backgroundColor:'rgba(170,237, 121, 0.15)',
+            backgroundColor:'rgba(170,237,121, 0.15)',
             borderWidth: 1,
-            borderColor: 'rgba(160,220, 100, 1)',
+            borderColor: 'rgba(130,180,60, 1)',
             position: 'absolute',
             top: y,
             left: x,
             zIndex: 5,
           }}
         >
-          <Text>Label: {div.label}</Text>
+          <Text>Label: {data.label}</Text>
         </Pressable>
       )
     })
@@ -324,39 +335,43 @@ export default function BedGrid ({navigation}) {
 
 
   return (
-    <>
-    <DropdownMenu />
-    <GridMenu />
-    { message.status &&
-    <Messages message={message.text} duration={1000} />
-    }
-    <View style={styles.GRDscreenContainer} >
-      <View style={styles.gridContainer}>
-        <Divisions />
-        <View style={styles.grid}
-          {...panResponder.current.panHandlers}
-          ref={myRef}
-          onLayout={handleLayout}
-        >
-          <BedLayout />
-          {columns}
+    <View style={styles.GRDContainer}>
+      {/*<DropdownMenu />*/}
+      <Text style={styles.GRDName}>{route.params?.data.name}</Text>
+      <GridMenu />
+      { message.status &&
+      <Messages message={message.text} duration={1000} />
+      }
+      <View style={styles.GRDscreenContainer} >
+        <View style={styles.gridContainer}>
+          <Divisions />
+          <View style={styles.grid}
+            {...panResponder.current.panHandlers}
+            ref={myRef}
+            onLayout={handleLayout}
+          >
+            <BedLayout />
+            {columns}
+          </View>
         </View>
+        {/*
+        <Text>No. of Cells: {selectedCells}</Text>
+        <Text>No. Div Cells : {divCells}</Text>
+        <Text>X: {coordinates.Cx} Y: {coordinates.Cy}</Text>
+        <Text>Grid Coordinates {gridCoordinates.px}, {gridCoordinates.py}</Text>
+        */}
       </View>
-      {/*
-      <Text>No. of Cells: {selectedCells}</Text>
-      <Text>No. Div Cells : {divCells}</Text>
-      <Text>X: {coordinates.Cx} Y: {coordinates.Cy}</Text>
-      <Text>Grid Coordinates {gridCoordinates.px}, {gridCoordinates.py}</Text>
-      */}
     </View>
-
-    </>
   )
 }
 
 
 // Styles ------------------------------------------------
 const styles = StyleSheet.create({
+  GRDContainer: {
+    flex: 0.95,
+    backgroundColor: 'white',
+  },
   GRDscreenContainer: {
     flex: 1,
     padding: 20,
@@ -369,6 +384,12 @@ const styles = StyleSheet.create({
     alignItems: 'left',
     //borderWidth: 2,
     //borderColor: 'blue'
+  },
+  GRDName:{
+    fontSize: 20,
+    fontWeight:'bold',
+    marginLeft: 20,
+    marginTop:10,
   },
 
   grid: {
@@ -484,12 +505,12 @@ const styles = StyleSheet.create({
     left: 0,
     zIndex: 2,
     borderWidth:1,
-    //borderColor: 'red',
+    borderColor: 'gray',
   },
   BLcolumn: {
     borderWidth: 1,
     //borderRightWidth: 1,
-    borderColor: 'black',
+    borderColor: 'gray',
   },
 
 })

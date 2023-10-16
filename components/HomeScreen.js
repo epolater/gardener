@@ -6,13 +6,16 @@ import DataContext from './DataContext'
 import BedSumCard from './BedSumCard'
 import AddNewBedMenu from './AddNewBedMenu'
 
-export default function HomeScreen () {
+export default function HomeScreen ({navigation}) {
 
   // Conncet to DataContext
-  const {beds, deleteBed} = useContext(DataContext)
+  const {beds, deleteBed, divisions} = useContext(DataContext)
 
   // Delete Bed
   const handleDeleteBed = (id) => {deleteBed(id)}
+
+  // Edit Bed
+  const editBed = () => {navigation.navigate('BedGrid')}
 
 
   // Bed Cards Slider
@@ -28,6 +31,7 @@ export default function HomeScreen () {
               width={bed.width}
               length={bed.length}
               onDelete={handleDeleteBed}
+              navigation={navigation}
             />
           </View>
         )
@@ -54,6 +58,7 @@ export default function HomeScreen () {
           <Text style={styles.MBHeaderText}>My Beds</Text>
       </View>
       <MyBeds />
+      <Text>Divisions count : {divisions.length}</Text>
       </ScrollView>
     </>
   )

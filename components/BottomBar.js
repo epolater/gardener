@@ -11,17 +11,15 @@ export default function BottomBar() {
   
   const Tab = createBottomTabNavigator()
 
-
   return (
     <Tab.Navigator
-      initialRouteName = 'BedGrid'
+      //initialRouteName = 'BedGrid'
       screenOptions={{
         headerShown: false,
         tabBarStyle: styles.tabBar,
         tabBarActiveTintColor: 'white',
         tabBarInactiveTintColor: '#f6f6f6',
       }}
-    
     >
       <Tab.Screen name='Home' component={HomeScreen}
         options={{
@@ -30,7 +28,7 @@ export default function BottomBar() {
           }
         }}
       />
-      <Tab.Screen name='BedGrid' component={BedGrid}/>
+      {/*<Tab.Screen name='BedGrid' component={BedGrid}/>*/}
       
     </Tab.Navigator>
   )

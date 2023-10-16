@@ -4,38 +4,55 @@ import * as SQLite from 'expo-sqlite'
 const DataContext = createContext();
 
 export const DataProvider = ({ children }) => {
-  const [beds, setBeds] = useState([]);
+  const [beds, setBeds] = useState([])
+  const [divisions, setDivisions] = useState([])
 
-  // Open database if not exists and retrieve data from database
+  // Open database (if not exists)
   const db = SQLite.openDatabase('mydatabase.db')
 
-  // Creating Beds Table
+  // CREATING TABLES
   useEffect(() => {
     const createDatabase = () => {
-        db.transaction(tx => {
-          tx.executeSql(
-            'CREATE TABLE IF NOT EXISTS beds (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, number INTEGER, width INTEGER, length INTEGER)',
-            [],
-            (_, error) => {console.log('Error creating table "beds":', error)}
-          )
-        })
-      }
+      db.transaction(tx => {
+        // Create the Beds table
+        tx.executeSql(
+          `CREATE TABLE IF NOT EXISTS beds (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            number INTEGER,
+            width INTEGER,
+            length INTEGER
+          )`,
+          [],
+          (_, error) => {
+            if (error.rowsAffected === 0) {null}
+            else {console.log('Error creating table "beds":', error)}
+          }
+        );
+
+        // Create the Divisions table
+        tx.executeSql(
+          `CREATE TABLE IF NOT EXISTS divisions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            divdata TEXT,
+            bed_id INTEGER,
+            FOREIGN KEY (bed_id) REFERENCES beds(id)
+          )`,
+          [],
+          (_, error) => {
+            if (error.rowsAffected === 0) {null}
+            else {console.log('Table "divisions" created successfully.')}
+          }
+        )
+      })
+    }
 
     createDatabase();
 
   }, [])
 
-  // Retrieve data from the database
-  useEffect(() => {
-    db.transaction(tx => {
-      tx.executeSql('SELECT * FROM beds',null,
-        (_, result) => setBeds(result.rows._array.reverse()),
-        (_, error) => console.log(error)
-      )
-    })
-    //console.log("Retrieve data from the database")
-  }, [])
 
+  // EDIT BEDS TABLE
   // Insert a new bed into the database
   const insertBed = (bed) => {
     db.transaction(tx => {
@@ -51,8 +68,7 @@ export const DataProvider = ({ children }) => {
         (_, error) => console.log(error)
       );
     });
-  };
-
+  }
   // Update a bed in the database
   const updateBed = (bed) => {
     db.transaction(tx => {
@@ -67,8 +83,7 @@ export const DataProvider = ({ children }) => {
         (_, error) => console.log(error)
       );
     });
-  };
-
+  }
   // Delete a bed from the database
   const deleteBed = (id) => {
     db.transaction(tx => {
@@ -78,10 +93,56 @@ export const DataProvider = ({ children }) => {
         (_, error) => console.log(error)
       );
     });
-  };
+  }
+
+  // EDIT DIVISIONS TABLE
+  // Insert a new division into the database
+  const insertDivision = (divdata, bed_id) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'INSERT INTO divisions (divdata, bed_id) VALUES (?, ?)',
+        [divdata, bed_id],
+        (_, result) => {
+          // Get the ID of the newly inserted division
+          const newDivisionId = result.insertId
+          // Add the new bed to the existing beds state
+          setDivisions((prevDivisions) => [
+            ...prevDivisions, { id: newDivisionId, divdata: divdata, bed_id: bed_id }
+          ]);
+        },
+        (_, error) => console.log('Error creating divisions:',error)
+      );
+    });
+  }
+
+  // RETRIEVE DATA FROM DATABASE
+  useEffect(() => {
+    db.transaction(tx => {
+      // Beds
+      tx.executeSql('SELECT * FROM beds',null,
+        (_, result) => setBeds(result.rows._array.reverse()),
+        (_, error) => console.log(error)
+      );
+
+      // Divisions
+      tx.executeSql('SELECT * FROM divisions',null,
+        (_, result) => setDivisions(result.rows._array),
+        (_, error) => console.log(error)
+      )
+    })
+    //console.log("Retrieve data from the database")
+  }, [])
 
   return (
-    <DataContext.Provider value={{ beds, insertBed, updateBed, deleteBed }}>
+    <DataContext.Provider
+    value={{
+      beds,
+      insertBed,
+      updateBed,
+      deleteBed,
+      divisions,
+      insertDivision
+    }}>
       {children}
     </DataContext.Provider>
   );

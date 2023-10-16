@@ -9,6 +9,7 @@ import {DataProvider} from './components/DataContext'
 import TopBar from './components/TopBar'
 import BottomBar from './components/BottomBar'
 import AddProducts from './components/AddProducts'
+import BedGrid from './components/BedGrid'
 
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
     },
   }
 
+
   return (
     <DataProvider>
       <NavigationContainer theme={navTheme} >
@@ -33,7 +35,7 @@ export default function App() {
           <TopBar />
         </View>
 
-        <Stack.Navigator >
+        <Stack.Navigator>
           <Stack.Screen 
             name='BottomBar'
             component={BottomBar}
@@ -44,6 +46,18 @@ export default function App() {
             component={AddProducts}
             options={() => ({
               title: 'Add Products',
+              headerBackVisible: true,
+              headerBackTitleVisible: false,
+              headerStyle: {backgroundColor: '#46785A'},
+              headerTitleStyle: {color: 'white'},
+              headerTintColor: 'white'
+            })}
+          />
+          <Stack.Screen 
+            name='BedGrid'
+            component={BedGrid}
+            options={() => ({
+              title: 'Edit Bed',
               headerBackVisible: true,
               headerBackTitleVisible: false,
               headerStyle: {backgroundColor: '#46785A'},
