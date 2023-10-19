@@ -6,6 +6,7 @@ const DataContext = createContext();
 export const DataProvider = ({ children }) => {
   const [beds, setBeds] = useState([])
   const [divisions, setDivisions] = useState([])
+  const [products, setProducts] = useState([])
 
   // Open database (if not exists)
   const db = SQLite.openDatabase('mydatabase.db')
@@ -43,7 +44,23 @@ export const DataProvider = ({ children }) => {
             if (error.rowsAffected === 0) {null}
             else {console.log('Table "divisions" created successfully.')}
           }
-        )
+        );
+
+        // Create Products Table
+        tx.executeSql(
+          `CREATE TABLE IF NOT EXISTS products (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            div_id INTEGER,
+            FOREIGN KEY (div_id) REFERENCES divisions(id)
+          )`,
+          [],
+          (_, error) => {
+            if (error.rowsAffected === 0) {null}
+            else {console.log('Table "products" created successfully.')}
+          }
+        );
+
       })
     }
 
@@ -105,7 +122,7 @@ export const DataProvider = ({ children }) => {
         (_, result) => {
           // Get the ID of the newly inserted division
           const newDivisionId = result.insertId
-          // Add the new bed to the existing beds state
+          // Add the new bed to the existing divisions state
           setDivisions((prevDivisions) => [
             ...prevDivisions, { id: newDivisionId, divdata: divdata, bed_id: bed_id }
           ]);
@@ -113,6 +130,38 @@ export const DataProvider = ({ children }) => {
         (_, error) => console.log('Error creating divisions:',error)
       );
     });
+  }
+  // Delete a Division
+  const deleteDivision = (id) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'DELETe FROM divisions WHERE id=?', [id], () => {
+          setDivisions((prevDivisions) => prevDivisions.filter((div) => div.id !== id))
+        }
+      )
+    })
+  }
+
+  // EDIT PRODUCTS TABLE
+  // Insert a new Product to a Division
+  const addNewProduct = (products, divId) => {
+    products.map((product) => {
+      db.transaction(tx => {
+        tx.executeSql(
+          'INSERT INTO products (name, div_id) VALUES (?, ?)',
+          [product, divId],
+          (_, result) => {
+            // Get the ID of the newly inserted product
+            const newProductId = result.insertId
+            // Add the new product to the existing products state
+            setProducts((prevProducts) => [
+              ...prevProducts, { id: newProductId, name: product, div_id: divId }
+            ]);
+          },
+          (_, error) => console.log('Error adding products:',error)
+        );
+      });
+    })
   }
 
   // RETRIEVE DATA FROM DATABASE
@@ -122,11 +171,15 @@ export const DataProvider = ({ children }) => {
       tx.executeSql('SELECT * FROM beds',null,
         (_, result) => setBeds(result.rows._array.reverse()),
         (_, error) => console.log(error)
-      );
-
+      )
       // Divisions
       tx.executeSql('SELECT * FROM divisions',null,
         (_, result) => setDivisions(result.rows._array),
+        (_, error) => console.log(error)
+      )
+      // Products
+      tx.executeSql('SELECT * FROM products',null,
+        (_, result) => setProducts(result.rows._array),
         (_, error) => console.log(error)
       )
     })
@@ -141,7 +194,10 @@ export const DataProvider = ({ children }) => {
       updateBed,
       deleteBed,
       divisions,
-      insertDivision
+      insertDivision,
+      deleteDivision,
+      products,
+      addNewProduct,
     }}>
       {children}
     </DataContext.Provider>

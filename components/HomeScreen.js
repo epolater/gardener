@@ -58,7 +58,6 @@ export default function HomeScreen ({navigation}) {
           <Text style={styles.MBHeaderText}>My Beds</Text>
       </View>
       <MyBeds />
-      <Text>Divisions count : {divisions.length}</Text>
       </ScrollView>
     </>
   )

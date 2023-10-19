@@ -7,30 +7,23 @@ import {
   Alert,
   FlatList, } from 'react-native'
 import React, { useState, useContext, useRef, useEffect } from 'react'
-import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { useNavigation } from '@react-navigation/native'
 
-// Icons
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
-import { 
-  faChevronDown,faChevronUp,faBorderNone,faBroom,
-  faPlus, } from '@fortawesome/free-solid-svg-icons/'
+import { faTrash,faPen,faBorderNone,faBroom, faPlus, } from '@fortawesome/free-solid-svg-icons/'
 
 import DataContext from './DataContext'
 import Messages from './Messages'
-import AddProducts from './AddProducts'
-import { NavigationContainer } from '@react-navigation/native'
+
 
 export default function BedGrid ({navigation, route}) {
 
   // Retrieve data from the database
-  const {beds, divisions, insertDivision} = useContext(DataContext)
+  const {beds, divisions, insertDivision, deleteDivision, products} = useContext(DataContext)
   
   // Selected Bed
   const bed_id = route.params?.data.id
   const bed = beds.filter((bed) => bed.id===bed_id)
   const selectedBed = bed[0]
-
 
   // Bed Dropdown Selection Menu
   // const [selectedOption, setSelectedOption] = useState('Select an option ')
@@ -88,11 +81,17 @@ export default function BedGrid ({navigation, route}) {
         <Pressable onPress={() => setGridVisible(!gridVisible)}>
           <FontAwesomeIcon icon={faBorderNone} size={24} style={styles.GRDgridMenuICons}/>
         </Pressable>
-        <Pressable onPress={() => setSelectedCells([])}>
-          <FontAwesomeIcon icon={faBroom} size={24} style={styles.GRDgridMenuICons}/>
+        <Pressable disabled={!cellsSeleceted} onPress={() => setSelectedCells([])} >
+          <FontAwesomeIcon icon={faBroom} size={24} style={[styles.GRDgridMenuICons , !cellsSeleceted && {color: 'lightgray'}]}/>
         </Pressable>
         <Pressable disabled={!cellsSeleceted} onPress={() => {createBedDivision()}}>
           <FontAwesomeIcon icon={faPlus} size={24} style={[styles.GRDgridMenuICons , !cellsSeleceted && {color: 'lightgray'}]} />
+        </Pressable>
+        <Pressable disabled={!divisionSelected} onPress={() => {navigation.navigate('AddProducts', {data: selectedDiv})}}>
+          <FontAwesomeIcon icon={faPen} size={20} style={[styles.GRDgridMenuICons , !divisionSelected && {color: 'lightgray'}]} />
+        </Pressable>
+        <Pressable disabled={!divisionSelected} onPress={() => {deleteDivision(selectedDiv)}}>
+          <FontAwesomeIcon icon={faTrash} size={20} style={[styles.GRDgridMenuICons , !divisionSelected && {color: 'lightgray'}]} />
         </Pressable>
       </View>
     )
@@ -200,7 +199,13 @@ export default function BedGrid ({navigation, route}) {
       const row_N = Math.floor((gestureState.y0 - gridCoordinates.py) / cellHeight)
       handleCellPress(`${col_N}-${row_N}`)
       setInitialCell({col_N: col_N, row_N: row_N})
-      //console.log('Col:', col_N, 'Row:', row_N)
+      setCellsSelected(false)
+      
+      // Unselect a Division if Selected
+      if (selectedDiv !== '') {
+        setSelectedDiv('')
+        setDivisionSelected(false)
+      }
 
       //console.log('Cell Height:',cellHeight)
       //console.log('gestureState.x0: ',gestureState.x0)
@@ -292,6 +297,7 @@ export default function BedGrid ({navigation, route}) {
 
       /// Clean selected cells
       setSelectedCells([])
+      setCellsSelected(false)
 
       /// Add selected cells to Divisions' cell array
       setDivCells((prevDivCells) => [...prevDivCells, ...selectedCells])
@@ -305,20 +311,45 @@ export default function BedGrid ({navigation, route}) {
   }
 
   // Show Divisions
+  const [selectedDiv, setSelectedDiv] = useState('')
+  const [divisionSelected, setDivisionSelected] = useState(false)
+
+  const handleSelectDivision = (id) => {
+    // Select the Div
+    if (selectedDiv === id) {
+      setSelectedDiv('')
+      setDivisionSelected(false)
+    // Unselect the Div
+    } else {
+      setSelectedDiv(id)
+      setDivisionSelected(true)
+      /// Clean selected cells
+      setSelectedCells([])
+      setCellsSelected(false)
+    }
+  }
+
   const Divisions = () => {
     const filteredDivisions = divisions.filter((div) => div.bed_id === bed_id)
+
     return filteredDivisions.map((div, index)=>{
       const data = JSON.parse(div.divdata)
       const height = (data.endRow - data.startRow + 1) * cellHeight
       const width = (data.endCol - data.startCol + 1) * cellHeight
       const x = data.startCol * cellHeight
       const y = data.startRow * cellHeight
+
+      const divProducts = products.filter((product) => product.div_id === div.id)
+
       return (
-        <Pressable key={index} onPress={() =>{navigation.navigate('AddProducts')}}
+        <Pressable key={index} onPress={() => {handleSelectDivision(div.id)}}
           style={{
             width: width,
             height: height,
-            backgroundColor:'rgba(170,237,121, 0.15)',
+            backgroundColor:
+              selectedDiv === div.id
+              ?'rgba(170,237,121, 0.50)'
+              :'rgba(170,237,121, 0.15)',
             borderWidth: 1,
             borderColor: 'rgba(130,180,60, 1)',
             position: 'absolute',
@@ -328,6 +359,8 @@ export default function BedGrid ({navigation, route}) {
           }}
         >
           <Text>Label: {data.label}</Text>
+          <Text>Products :{divProducts.map((product) => product.name)}</Text>
+
         </Pressable>
       )
     })

@@ -6,8 +6,12 @@ import { faMagnifyingGlass, faPlus } from '@fortawesome/free-solid-svg-icons/'
 
 import DataContext from './DataContext'
 
-export default function AddProducts() {
+export default function AddProducts({navigation, route}) {
 
+  // Retrieve data from the database
+  const {products, addNewProduct} = useContext(DataContext)
+
+  // List of Products ( This will be seperate component later)
   const productsData = [
     {
       title: 'Alliums',
@@ -58,6 +62,9 @@ export default function AddProducts() {
       data: ['Beets', 'Carrots', 'Horseradish', 'Parsley Root', 'Parsnips', 'Potatoes', 'Radishes', 'Rutabaga', 'Sweet Potatoes', 'Turnips'],
     },
   ]
+  
+  // Selected Divisions Id
+  const selectedDivisionId = route.params?.data
 
   // Searching Products
   const [search, onChangeSearch] = useState('')
@@ -67,21 +74,29 @@ export default function AddProducts() {
     section.data.some((item) => item.toLowerCase().includes(search.toLowerCase()))
   )
 
-
   // Products selection
   const [selectedProducts, setSelectedProducts] = useState([])
+  const [addButtonState, setAddButtonState] = useState(false)
 
   const handleSelection = (product) => {
+    // Select-Unselect product
     if (selectedProducts.includes(product)) {
-      // unselect product if already selected
       setSelectedProducts(selectedProducts.filter((item) => item !== product ))
     } else {
       setSelectedProducts([...selectedProducts, product])
     }
+    // Enable-Disable Add Button
+    const newSelectedProducts = selectedProducts.includes(product)
+      ? selectedProducts.filter((item) => item !== product)
+      : [...selectedProducts, product];
+    setAddButtonState(newSelectedProducts.length !== 0);
   }
 
-  const addProducts = () => {
-    
+  const handleAddProduct = (products) => {
+    addNewProduct(products, selectedDivisionId)
+    setSelectedProducts([])
+    //setAddButtonState(false)
+    navigation.goBack()
   }
 
   // Pruducts Section View
@@ -118,8 +133,6 @@ export default function AddProducts() {
             </View>
           );
         }
-        // If there are no matching items in this section, don't render it.
-        return null;
       })
     );
   };
@@ -137,8 +150,12 @@ export default function AddProducts() {
             onChangeText={onChangeSearch}
           ></TextInput>
         </View>
-        <Pressable style={styles.ANPAddButton}>
-          <FontAwesomeIcon icon={faPlus} size={24} style={styles.ANPAddIcon}/>
+        <Pressable
+          style={[styles.ANPAddButton, !addButtonState && {backgroundColor: 'grey'}]}
+          onPress={() => {handleAddProduct(selectedProducts)}}
+        >
+          <FontAwesomeIcon icon={faPlus} size={24} style={styles.ANPAddIcon }
+          />
         </Pressable>
 
       </View>
